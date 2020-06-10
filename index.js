@@ -115,6 +115,7 @@ async function createExpressApp()
 	logger.info('creating Express app...');
 
 	expressApp = express();
+	expressApp.use(express.static(__dirname));
 	expressApp.use(bodyParser.json());
 
 	expressApp.param(
