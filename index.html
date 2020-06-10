@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+
+<head>
+</head>
+
+<body>
+<script type=module>
+import RoomClient from './RoomClient.js';
+import randomName from './randomName.js';
+import deviceInfo from './deviceInfo.js';
+
+(async () => {
+
+window.logger = console; // new Logger('RoomClient');
+
+const roomId = 'room1';
+const peerId = randomName();
+const displayName = randomName();
+// Get current device info.
+const device = deviceInfo();
+
+/* store.dispatch(
+	stateActions.setRoomUrl(roomUrl));
+
+store.dispatch(
+	stateActions.setRoomFaceDetection(faceDetection));
+
+store.dispatch(
+	stateActions.setMe({ peerId, displayName, displayNameSet, device })); */
+
+const roomClient = new RoomClient({
+	roomId,
+	peerId,
+	displayName,
+	device,
+	/* handlerName : handler,
+	useSimulcast,
+	useSharingSimulcast,
+	forceTcp,
+	produce,
+	consume,
+	forceH264,
+	forceVP9,
+	svc,
+	datachannel,
+	externalVideo */
+});
+
+await roomClient.join();
+
+})();
+</script>
+</body>
+
+</html>
