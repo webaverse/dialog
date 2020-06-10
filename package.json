@@ -19,7 +19,9 @@
     "heapdump": "^0.3.15",
     "jsonwebtoken": "^8.5.1",
     "mediasoup": "github:versatica/mediasoup#v3",
+    "mediasoup-client": "^3.6.9",
     "pidusage": "^2.0.18",
+    "protoo-client": "^4.0.4",
     "protoo-server": "^4.0.4",
     "sctp": "^0.0.19"
   },
