@@ -360,6 +360,12 @@ export default class RoomClient extends EventTarget
 						consumer.on('transportclose', () =>
 						{
 							this._consumers.delete(consumer.id);
+
+							this.dispatchEvent(new MessageEvent('removereceivestream', {
+								data: {
+								    consumer,
+								},
+							}));
 						});
 
 						const { spatialLayers, temporalLayers } =
@@ -390,6 +396,11 @@ export default class RoomClient extends EventTarget
 						// If audio-only mode is enabled, pause it.
 						/* if (consumer.kind === 'video' && store.getState().me.audioOnly)
 							this._pauseConsumer(consumer); */
+					    this.dispatchEvent(new MessageEvent('addreceivestream', {
+							data: {
+							    consumer,
+							},
+						}));
 					}
 					catch (error)
 					{
@@ -456,6 +467,12 @@ export default class RoomClient extends EventTarget
 						dataConsumer.on('open', () =>
 						{
 							logger.debug('DataConsumer "open" event');
+
+							this.dispatchEvent(new MessageEvent('addreceive', {
+								data: {
+								    dataConsumer,
+								},
+							}));
 						});
 
 						dataConsumer.on('close', () =>
@@ -463,6 +480,12 @@ export default class RoomClient extends EventTarget
 							logger.warn('DataConsumer "close" event');
 
 							this._dataConsumers.delete(dataConsumer.id);
+
+							this.dispatchEvent(new MessageEvent('removereceive', {
+								data: {
+								    dataConsumer,
+								},
+							}));
 
 							/* store.dispatch(requestActions.notify(
 								{
@@ -1710,7 +1733,14 @@ export default class RoomClient extends EventTarget
 			{
 				logger.error('chat DataProducer "close" event');
 
+                const {_chatDataProducer} = this;
 				this._chatDataProducer = null;
+
+				this.dispatchEvent(new MessageEvent('removesend', {
+					data: {
+	                    dataProducer: _chatDataProducer,
+	                },
+				}));
 
 				/* store.dispatch(requestActions.notify(
 					{
@@ -1734,6 +1764,12 @@ export default class RoomClient extends EventTarget
 			{
 				logger.debug('chat DataProducer "bufferedamountlow" event');
 			});
+
+			this.dispatchEvent(new MessageEvent('addsend', {
+				data: {
+                    dataProducer: this._chatDataProducer,
+                },
+			}));
 		}
 		catch (error)
 		{
@@ -2379,6 +2415,12 @@ export default class RoomClient extends EventTarget
 				store.dispatch(
 					stateActions.setRoomStatsPeerId(me.id)); */
 			}
+
+			this.dispatchEvent(new MessageEvent('join', {
+				data: {
+					// peerId: me.id,
+				},
+			}))
 		}
 		catch (error)
 		{
