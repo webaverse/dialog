@@ -1704,7 +1704,7 @@ export default class RoomClient extends EventTarget
 			// Create chat DataProducer.
 			this._chatDataProducer = await this._sendTransport.produceData(
 				{
-					ordered        : false,
+					ordered        : true, // false,
 					maxRetransmits : 1,
 					label          : 'chat',
 					priority       : 'medium',
