@@ -49,7 +49,7 @@ const EXTERNAL_VIDEO_SRC = '/resources/videos/video-audio-stereo.mp4';
 
 let store;
 
-export default class RoomClient
+export default class RoomClient extends EventTarget
 {
 	/**
 	 * @param  {Object} data
@@ -80,6 +80,8 @@ export default class RoomClient
 		}
 	)
 	{
+        super();
+
 		logger.debug(
 			'constructor() [roomId:"%s", peerId:"%s", displayName:"%s", device:%s]',
 			roomId, peerId, displayName, device.flag);
