@@ -50,12 +50,24 @@ const roomClient = new RoomClient({
 	datachannel,
 	externalVideo */
 });
-roomClient.addEventListener('addsend', e => {
+roomClient.addEventListener('addsend', async e => {
   const {data: {dataProducer: {id, _dataChannel}}} = e;
   console.log('add send', id, _dataChannel, _dataChannel.readyState);
+  if (_dataChannel.readyState !== 'open') {
+    await new Promise((accept, reject) => {
+      const _open = e => {
+        accept();
+
+        _dataChannel.flushMessageQueue();
+        _dataChannel.removeEventListener('open', _open);
+      };
+      _dataChannel.addEventListener('open', _open);
+    });
+  }
   /* _dataChannel.addEventListener('open', e => {
     console.log('send open', e); */
     // setInterval(() => {
+  console.log('sending...');
       _dataChannel.send('lol');
     // }, 1000);
   // });
