@@ -13,6 +13,7 @@ import deviceInfo from './deviceInfo.js';
 (async () => {
 
 window.logger = console; // new Logger('RoomClient');
+window.logger.debug = window.logger.info;
 
 const roomId = 'room1';
 const peerId = randomName();
@@ -34,6 +35,9 @@ const roomClient = new RoomClient({
 	peerId,
 	displayName,
 	device,
+  produce: true,
+  consume: true,
+  datachannel: true,
 	/* handlerName : handler,
 	useSimulcast,
 	useSharingSimulcast,
@@ -46,8 +50,50 @@ const roomClient = new RoomClient({
 	datachannel,
 	externalVideo */
 });
+roomClient.addEventListener('addsend', e => {
+  const {data: {dataProducer: {id, _dataChannel}}} = e;
+  console.log('add send', id, _dataChannel, _dataChannel.readyState);
+  /* _dataChannel.addEventListener('open', e => {
+    console.log('send open', e); */
+    // setInterval(() => {
+      _dataChannel.send('lol');
+    // }, 1000);
+  // });
+});
+roomClient.addEventListener('removesend', e => {
+  const {data: {dataProducer: {id, _dataChannel}}} = e;
+  console.log('remove send', id, _dataChannel);
+});
+roomClient.addEventListener('addreceive', e => {
+  const {data: {dataConsumer: {id, _dataChannel}}} = e;
+  console.log('add data consumer', id, _dataChannel);
+  _dataChannel.addEventListener('message', e => {
+    console.log('got data message', e);
+  });
+});
+roomClient.addEventListener('removereceive', e => {
+  const {data: {dataConsumer: {id, _dataChannel}}} = e;
+  console.log('add data consumer', id, _dataChannel);
+});
+/* roomClient.addEventListener('message', e => {
+  console.log('message', e);
+}); */
+roomClient.addEventListener('addreceivestream', e => {
+  const {data: {consumer: {id, _track}}} = e;
+  console.log('add receive stream', id, _track);
+});
+roomClient.addEventListener('removereceivestream', e => {
+  const {data: {consumer: {id, _track}}} = e;
+  console.log('remove receive stream', id, _track);
+});
 
-await roomClient.join();
+roomClient.join();
+roomClient.addEventListener('join', async e => {
+  console.log('got join');
+  roomClient.enableChatDataProducer();
+  // await roomClient.enableMic();
+  // await roomClient.enableWebcam();
+});
 
 })();
 </script>
