@@ -366,7 +366,7 @@ export default class RoomClient extends EventTarget
 							mediasoupClient.parseScalabilityMode(
 								consumer.rtpParameters.encodings[0].scalabilityMode);
 
-						store.dispatch(stateActions.addConsumer(
+						/* store.dispatch(stateActions.addConsumer(
 							{
 								id                     : consumer.id,
 								type                   : type,
@@ -381,15 +381,15 @@ export default class RoomClient extends EventTarget
 								codec                  : consumer.rtpParameters.codecs[0].mimeType.split('/')[1],
 								track                  : consumer.track
 							},
-							peerId));
+							peerId)); */
 
 						// We are ready. Answer the protoo request so the server will
 						// resume this Consumer (which was paused for now if video).
 						accept();
 
 						// If audio-only mode is enabled, pause it.
-						if (consumer.kind === 'video' && store.getState().me.audioOnly)
-							this._pauseConsumer(consumer);
+						/* if (consumer.kind === 'video' && store.getState().me.audioOnly)
+							this._pauseConsumer(consumer); */
 					}
 					catch (error)
 					{
@@ -464,11 +464,11 @@ export default class RoomClient extends EventTarget
 
 							this._dataConsumers.delete(dataConsumer.id);
 
-							store.dispatch(requestActions.notify(
+							/* store.dispatch(requestActions.notify(
 								{
 									type : 'error',
 									text : 'DataConsumer closed'
-								}));
+								})); */
 						});
 
 						dataConsumer.on('error', (error) =>
@@ -488,7 +488,7 @@ export default class RoomClient extends EventTarget
 								'DataConsumer "message" event [streamId:%d]',
 								dataConsumer.sctpStreamParameters.streamId);
 
-							// TODO: For debugging.
+							/* // TODO: For debugging.
 							window.DC_MESSAGE = message;
 
 							if (message instanceof ArrayBuffer)
@@ -561,20 +561,20 @@ export default class RoomClient extends EventTarget
 
 									break;
 								}
-							}
+							} */
 						});
 
 						// TODO: REMOVE
 						window.DC = dataConsumer;
 
-						store.dispatch(stateActions.addDataConsumer(
+						/* store.dispatch(stateActions.addDataConsumer(
 							{
 								id                   : dataConsumer.id,
 								sctpStreamParameters : dataConsumer.sctpStreamParameters,
 								label                : dataConsumer.label,
 								protocol             : dataConsumer.protocol
 							},
-							peerId));
+							peerId)); */
 
 						// We are ready. Answer the protoo request.
 						accept();
@@ -822,14 +822,14 @@ export default class RoomClient extends EventTarget
 					// 	.find((codec) => codec.mimeType.toLowerCase() === 'audio/pcma')
 				});
 
-			store.dispatch(stateActions.addProducer(
+			/* store.dispatch(stateActions.addProducer(
 				{
 					id            : this._micProducer.id,
 					paused        : this._micProducer.paused,
 					track         : this._micProducer.track,
 					rtpParameters : this._micProducer.rtpParameters,
 					codec         : this._micProducer.rtpParameters.codecs[0].mimeType.split('/')[1]
-				}));
+				})); */
 
 			this._micProducer.on('transportclose', () =>
 			{
@@ -963,8 +963,8 @@ export default class RoomClient extends EventTarget
 		let track;
 		let device;
 
-		store.dispatch(
-			stateActions.setWebcamInProgress(true));
+		/* store.dispatch(
+			stateActions.setWebcamInProgress(true)); */
 
 		try
 		{
@@ -1057,7 +1057,7 @@ export default class RoomClient extends EventTarget
 					codec
 				});
 
-			store.dispatch(stateActions.addProducer(
+			/* store.dispatch(stateActions.addProducer(
 				{
 					id            : this._webcamProducer.id,
 					deviceLabel   : device.label,
@@ -1066,7 +1066,7 @@ export default class RoomClient extends EventTarget
 					track         : this._webcamProducer.track,
 					rtpParameters : this._webcamProducer.rtpParameters,
 					codec         : this._webcamProducer.rtpParameters.codecs[0].mimeType.split('/')[1]
-				}));
+				})); */
 
 			this._webcamProducer.on('transportclose', () =>
 			{
@@ -1099,8 +1099,8 @@ export default class RoomClient extends EventTarget
 				track.stop();
 		}
 
-		store.dispatch(
-			stateActions.setWebcamInProgress(false));
+		/* store.dispatch(
+			stateActions.setWebcamInProgress(false)); */
 	}
 
 	async disableWebcam()
@@ -1688,13 +1688,13 @@ export default class RoomClient extends EventTarget
 					appData        : { info: 'my-chat-DataProducer' }
 				});
 
-			store.dispatch(stateActions.addDataProducer(
+			/* store.dispatch(stateActions.addDataProducer(
 				{
 					id                   : this._chatDataProducer.id,
 					sctpStreamParameters : this._chatDataProducer.sctpStreamParameters,
 					label                : this._chatDataProducer.label,
 					protocol             : this._chatDataProducer.protocol
-				}));
+				})); */
 
 			this._chatDataProducer.on('transportclose', () =>
 			{
@@ -1712,22 +1712,22 @@ export default class RoomClient extends EventTarget
 
 				this._chatDataProducer = null;
 
-				store.dispatch(requestActions.notify(
+				/* store.dispatch(requestActions.notify(
 					{
 						type : 'error',
 						text : 'Chat DataProducer closed'
-					}));
+					})); */
 			});
 
 			this._chatDataProducer.on('error', (error) =>
 			{
 				logger.error('chat DataProducer "error" event:%o', error);
 
-				store.dispatch(requestActions.notify(
+				/* store.dispatch(requestActions.notify(
 					{
 						type : 'error',
 						text : `Chat DataProducer error: ${error}`
-					}));
+					})); */
 			});
 
 			this._chatDataProducer.on('bufferedamountlow', () =>
@@ -2134,7 +2134,6 @@ export default class RoomClient extends EventTarget
 
 		try
 		{
-			console.log('got client', mediasoupClient);
 			this._mediasoupDevice = new mediasoupClient.Device(
 				{
 					handlerName : this._handlerName
@@ -2325,7 +2324,7 @@ export default class RoomClient extends EventTarget
 						: undefined
 				});
 
-			store.dispatch(
+			/* store.dispatch(
 				stateActions.setRoomState('connected'));
 
 			// Clean all the existing notifcations.
@@ -2343,13 +2342,13 @@ export default class RoomClient extends EventTarget
 				store.dispatch(
 					stateActions.addPeer(
 						{ ...peer, consumers: [], dataConsumers: [] }));
-			}
+			} */
 
 			// Enable mic/webcam.
 			if (this._produce)
 			{
 				// Set our media capabilities.
-				store.dispatch(stateActions.setMediaCapabilities(
+				/* store.dispatch(stateActions.setMediaCapabilities(
 					{
 						canSendMic    : this._mediasoupDevice.canProduce('audio'),
 						canSendWebcam : this._mediasoupDevice.canProduce('video')
@@ -2369,16 +2368,16 @@ export default class RoomClient extends EventTarget
 						this.enableChatDataProducer();
 						this.enableBotDataProducer();
 					}
-				});
+				}); */
 			}
 
 			// NOTE: For testing.
 			if (window.SHOW_INFO)
 			{
-				const { me } = store.getState();
+				/* const { me } = store.getState();
 
 				store.dispatch(
-					stateActions.setRoomStatsPeerId(me.id));
+					stateActions.setRoomStatsPeerId(me.id)); */
 			}
 		}
 		catch (error)
@@ -2426,8 +2425,8 @@ export default class RoomClient extends EventTarget
 		else if (!this._webcams.has(currentWebcamId))
 			this._webcam.device = array[0];
 
-		store.dispatch(
-			stateActions.setCanChangeWebcam(this._webcams.size > 1));
+		/* store.dispatch(
+			stateActions.setCanChangeWebcam(this._webcams.size > 1)); */
 	}
 
 	_getWebcamType(device)
