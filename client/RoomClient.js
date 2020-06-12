@@ -1,5 +1,5 @@
-import protooClient from './node_modules/protoo-client/dist/index.js';
-import mediasoupClient from './node_modules/mediasoup-client/dist/index.js';
+import protooClient from '../protoo-client/build.js';
+import mediasoupClient from '../mediasoup-client/build.js';
 // import Logger from './Logger.js';
 import { getProtooUrl } from './urlFactory.js';
 import * as cookiesManager from './cookiesManager.js';

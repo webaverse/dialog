@@ -1,4 +1,4 @@
-import bowser from'./node_modules/bowser/src/bowser.js';
+import bowser from'../bowser/src/bowser.js';
 
 // TODO: For testing.
 window.BOWSER = bowser;
