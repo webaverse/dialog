@@ -1,10 +1,15 @@
 import protooClient from '../protoo-client/build.js';
 import mediasoupClient from '../mediasoup-client/build.js';
 // import Logger from './Logger.js';
-import { getProtooUrl } from './urlFactory.js';
+// import { getProtooUrl } from './urlFactory.js';
 import * as cookiesManager from './cookiesManager.js';
 // import * as requestActions from './redux/requestActions';
 // import * as stateActions from './redux/stateActions';
+
+const apiHost = 'rtc.exokit.org:4443';
+function getProtooUrl({ roomId, peerId }) {
+	return `wss://${apiHost}/?roomId=${roomId}&peerId=${peerId}`;
+}
 
 const VIDEO_CONSTRAINS =
 {
