@@ -2,7 +2,7 @@ import protooClient from '../protoo-client/build.js';
 import mediasoupClient from '../mediasoup-client/build.js';
 // import Logger from './Logger.js';
 // import { getProtooUrl } from './urlFactory.js';
-import * as cookiesManager from './cookiesManager.js';
+// import * as cookiesManager from './cookiesManager.js';
 // import * as requestActions from './redux/requestActions';
 // import * as stateActions from './redux/stateActions';
 
@@ -1516,8 +1516,8 @@ export default class RoomClient extends EventTarget
 
 		if (
 			!this._webcamProducer &&
-			this._produce &&
-			(cookiesManager.getDevices() || {}).webcamEnabled
+			this._produce /* &&
+			(cookiesManager.getDevices() || {}).webcamEnabled */
 		)
 		{
 			this.enableWebcam();
@@ -1973,7 +1973,7 @@ export default class RoomClient extends EventTarget
 		logger.debug('changeDisplayName() [displayName:"%s"]', displayName);
 
 		// Store in cookie.
-		cookiesManager.setUser({ displayName });
+		// cookiesManager.setUser({ displayName });
 
 		try
 		{
