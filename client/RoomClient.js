@@ -11,6 +11,13 @@ function getProtooUrl({ roomId, peerId }) {
 	return `wss://${apiHost}/?roomId=${roomId}&peerId=${peerId}`;
 }
 
+const ICE_SERVERS = [
+    {urls: 'stun:stun.stunprotocol.org:3478'},
+	{urls: 'stun:stun1.l.google.com:19302'},
+	{urls: 'stun:stun2.l.google.com:19302'},
+	{urls: 'stun:stun3.l.google.com:19302'},
+	{urls: 'stun:stun4.l.google.com:19302'},
+];
 const VIDEO_CONSTRAINS =
 {
 	qvga : { width: { ideal: 320 }, height: { ideal: 240 } },
@@ -2252,13 +2259,7 @@ export default class RoomClient extends EventTarget
 						iceCandidates,
 						dtlsParameters,
 						sctpParameters,
-						iceServers             : [
-						    {urls: 'stun:stun.stunprotocol.org:3478'},
-							{urls: 'stun:stun1.l.google.com:19302'},
-							{urls: 'stun:stun2.l.google.com:19302'},
-							{urls: 'stun:stun3.l.google.com:19302'},
-							{urls: 'stun:stun4.l.google.com:19302'},
-						],
+						iceServers: ICE_SERVERS,
 						proprietaryConstraints : PC_PROPRIETARY_CONSTRAINTS
 					});
 
