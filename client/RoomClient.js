@@ -254,7 +254,6 @@ export default class RoomClient extends EventTarget
 
 	async join()
 	{
-		console.log('got', protooClient);
 		const protooTransport = new protooClient.WebSocketTransport(this._protooUrl);
 
 		this._protoo = new protooClient.Peer(protooTransport);
