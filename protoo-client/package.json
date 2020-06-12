@@ -1,4 +1,7 @@
 {
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
   "_from": "protoo-client@^4.0.4",
   "_id": "protoo-client@4.0.4",
   "_inBundle": false,
