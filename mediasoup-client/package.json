@@ -1,4 +1,7 @@
 {
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
   "_from": "mediasoup-client@^3.6.9",
   "_id": "mediasoup-client@3.6.9",
   "_inBundle": false,
