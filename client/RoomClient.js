@@ -2252,7 +2252,13 @@ export default class RoomClient extends EventTarget
 						iceCandidates,
 						dtlsParameters,
 						sctpParameters,
-						iceServers             : [],
+						iceServers             : [
+						    {urls: 'stun:stun.stunprotocol.org:3478'},
+							{urls: 'stun:stun1.l.google.com:19302'},
+							{urls: 'stun:stun2.l.google.com:19302'},
+							{urls: 'stun:stun3.l.google.com:19302'},
+							{urls: 'stun:stun4.l.google.com:19302'},
+						],
 						proprietaryConstraints : PC_PROPRIETARY_CONSTRAINTS
 					});
 
