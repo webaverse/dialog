@@ -1701,6 +1701,32 @@ export default class RoomClient extends EventTarget
 
 		try
 		{
+			// console.log('got handler', this._sendTransport._handler, this._sendTransport._handler._pc);
+            this._sendTransport._handler._pc.createDataChannel = (_createDataChannel => function createDataChannel() {
+            	const o = _createDataChannel.apply(this, arguments);
+                o.addEventListener('open', e => {
+                  // console.log('open data channel', e);
+
+                  const queue = [];
+                  const _message = e => {
+                    // console.log('queue message', e.data);
+                    queue.push(e.data);
+                  };
+                  o.addEventListener('message', _message);
+                  o.flushMessageQueue = () => {
+                    for (let i = 0; i < queue.length; i++) {
+                        const data = queue[i];
+                        o.dispatchEvent(new MessageEvent('message', {
+                            data,
+                        }));
+                    }
+                    o.removeEventListener('message', _message);
+                    o.flushMessageQueue = null;
+                  };
+                });
+                return o;
+            })(this._sendTransport._handler._pc.createDataChannel);
+
 			// Create chat DataProducer.
 			this._chatDataProducer = await this._sendTransport.produceData(
 				{
