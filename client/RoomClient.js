@@ -1700,7 +1700,7 @@ export default class RoomClient extends EventTarget
 
 		try
 		{
-			// console.log('got handler', this._sendTransport._handler, this._sendTransport._handler._pc);
+			/* // console.log('got handler', this._sendTransport._handler, this._sendTransport._handler._pc);
             this._sendTransport._handler._pc.createDataChannel = (_createDataChannel => function createDataChannel() {
             	const o = _createDataChannel.apply(this, arguments);
                 o.addEventListener('open', e => {
@@ -1724,7 +1724,7 @@ export default class RoomClient extends EventTarget
                   };
                 });
                 return o;
-            })(this._sendTransport._handler._pc.createDataChannel);
+            })(this._sendTransport._handler._pc.createDataChannel); */
 
 			// Create chat DataProducer.
 			this._chatDataProducer = await this._sendTransport.produceData(

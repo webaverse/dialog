@@ -58,7 +58,7 @@ roomClient.addEventListener('addsend', async e => {
       const _open = e => {
         accept();
 
-        _dataChannel.flushMessageQueue();
+        // _dataChannel.flushMessageQueue();
         _dataChannel.removeEventListener('open', _open);
       };
       _dataChannel.addEventListener('open', _open);
