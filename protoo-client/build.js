@@ -52,6 +52,7 @@ var
     }({
         "EHrm": [function(require, module, exports) {
             module.exports = {
+                browserslist: ["last 1 Chrome version"],
                 _from: "protoo-client@^4.0.4",
                 _id: "protoo-client@4.0.4",
                 _inBundle: !1,
@@ -423,44 +424,23 @@ var
             "process": "kfLt"
         }],
         "p5bA": [function(require, module, exports) {
-            function n(n, e) {
-                if (!(n instanceof e)) throw new TypeError("Cannot call a class as a function")
-            }
-
-            function e(n, e) {
-                for (var o = 0; o < e.length; o++) {
-                    var r = e[o];
-                    r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(n, r.key, r)
+            const r = require("debug"),
+                o = "protoo-client";
+            class e {
+                constructor(e) {
+                    e ? (this._debug = r(`${o}:${e}`), this._warn = r(`${o}:WARN:${e}`), this._error = r(`${o}:ERROR:${e}`)) : (this._debug = r(o), this._warn = r(`${o}:WARN`), this._error = r(`${o}:ERROR`)), this._debug.log = console.info.bind(console), this._warn.log = console.warn.bind(console), this._error.log = console.error.bind(console)
+                }
+                get debug() {
+                    return this._debug
+                }
+                get warn() {
+                    return this._warn
+                }
+                get error() {
+                    return this._error
                 }
             }
-
-            function o(n, o, r) {
-                return o && e(n.prototype, o), r && e(n, r), n
-            }
-            var r = require("debug"),
-                t = "protoo-client",
-                c = function() {
-                    function e(o) {
-                        n(this, e), o ? (this._debug = r("".concat(t, ":").concat(o)), this._warn = r("".concat(t, ":WARN:").concat(o)), this._error = r("".concat(t, ":ERROR:").concat(o))) : (this._debug = r(t), this._warn = r("".concat(t, ":WARN")), this._error = r("".concat(t, ":ERROR"))), this._debug.log = console.info.bind(console), this._warn.log = console.warn.bind(console), this._error.log = console.error.bind(console)
-                    }
-                    return o(e, [{
-                        key: "debug",
-                        get: function() {
-                            return this._debug
-                        }
-                    }, {
-                        key: "warn",
-                        get: function() {
-                            return this._warn
-                        }
-                    }, {
-                        key: "error",
-                        get: function() {
-                            return this._error
-                        }
-                    }]), e
-                }();
-            module.exports = c;
+            module.exports = e;
         }, {
             "debug": "BYFN"
         }],
@@ -638,159 +618,27 @@ var
             };
         }, {}],
         "Oomd": [function(require, module, exports) {
-            function t(e) {
-                return (t = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(t) {
-                    return typeof t
-                } : function(t) {
-                    return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t
-                })(e)
-            }
-
-            function e(t, e, r, n, o, i, u) {
-                try {
-                    var c = t[i](u),
-                        f = c.value
-                } catch (a) {
-                    return void r(a)
+            const {
+                EventEmitter: e
+            } = require("events"), t = require("./Logger");
+            class r extends e {
+                constructor(e) {
+                    super(), this.setMaxListeners(1 / 0), this._logger = e || new t("EnhancedEventEmitter")
                 }
-                c.done ? e(f) : Promise.resolve(f).then(n, o)
-            }
-
-            function r(t) {
-                return function() {
-                    var r = this,
-                        n = arguments;
-                    return new Promise(function(o, i) {
-                        var u = t.apply(r, n);
-
-                        function c(t) {
-                            e(u, o, i, c, f, "next", t)
-                        }
-
-                        function f(t) {
-                            e(u, o, i, c, f, "throw", t)
-                        }
-                        c(void 0)
+                safeEmit(e, ...t) {
+                    try {
+                        this.emit(e, ...t)
+                    } catch (r) {
+                        this._logger.error("safeEmit() | event listener threw an error [event:%s]:%o", e, r)
+                    }
+                }
+                async safeEmitAsPromise(e, ...t) {
+                    return new Promise((r, s) => {
+                        this.safeEmit(e, ...t, r, s)
                     })
                 }
             }
-
-            function n(t, e) {
-                if (!(t instanceof e)) throw new TypeError("Cannot call a class as a function")
-            }
-
-            function o(t, e) {
-                for (var r = 0; r < e.length; r++) {
-                    var n = e[r];
-                    n.enumerable = n.enumerable || !1, n.configurable = !0, "value" in n && (n.writable = !0), Object.defineProperty(t, n.key, n)
-                }
-            }
-
-            function i(t, e, r) {
-                return e && o(t.prototype, e), r && o(t, r), t
-            }
-
-            function u(t, e) {
-                if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function");
-                t.prototype = Object.create(e && e.prototype, {
-                    constructor: {
-                        value: t,
-                        writable: !0,
-                        configurable: !0
-                    }
-                }), e && c(t, e)
-            }
-
-            function c(t, e) {
-                return (c = Object.setPrototypeOf || function(t, e) {
-                    return t.__proto__ = e, t
-                })(t, e)
-            }
-
-            function f(t) {
-                var e = l();
-                return function() {
-                    var r, n = p(t);
-                    if (e) {
-                        var o = p(this).constructor;
-                        r = Reflect.construct(n, arguments, o)
-                    } else r = n.apply(this, arguments);
-                    return a(this, r)
-                }
-            }
-
-            function a(e, r) {
-                return !r || "object" !== t(r) && "function" != typeof r ? s(e) : r
-            }
-
-            function s(t) {
-                if (void 0 === t) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-                return t
-            }
-
-            function l() {
-                if ("undefined" == typeof Reflect || !Reflect.construct) return !1;
-                if (Reflect.construct.sham) return !1;
-                if ("function" == typeof Proxy) return !0;
-                try {
-                    return Date.prototype.toString.call(Reflect.construct(Date, [], function() {})), !0
-                } catch (t) {
-                    return !1
-                }
-            }
-
-            function p(t) {
-                return (p = Object.setPrototypeOf ? Object.getPrototypeOf : function(t) {
-                    return t.__proto__ || Object.getPrototypeOf(t)
-                })(t)
-            }
-            var y = require("events"),
-                h = y.EventEmitter,
-                v = require("./Logger"),
-                m = function(t) {
-                    u(o, h);
-                    var e = f(o);
-
-                    function o(t) {
-                        var r;
-                        return n(this, o), (r = e.call(this)).setMaxListeners(1 / 0), r._logger = t || new v("EnhancedEventEmitter"), r
-                    }
-                    return i(o, [{
-                        key: "safeEmit",
-                        value: function(t) {
-                            try {
-                                for (var e = arguments.length, r = new Array(e > 1 ? e - 1 : 0), n = 1; n < e; n++) r[n - 1] = arguments[n];
-                                this.emit.apply(this, [t].concat(r))
-                            } catch (o) {
-                                this._logger.error("safeEmit() | event listener threw an error [event:%s]:%o", t, o)
-                            }
-                        }
-                    }, {
-                        key: "safeEmitAsPromise",
-                        value: function() {
-                            var t = r(regeneratorRuntime.mark(function t(e) {
-                                var r, n, o, i = this,
-                                    u = arguments;
-                                return regeneratorRuntime.wrap(function(t) {
-                                    for (;;) switch (t.prev = t.next) {
-                                        case 0:
-                                            for (r = u.length, n = new Array(r > 1 ? r - 1 : 0), o = 1; o < r; o++) n[o - 1] = u[o];
-                                            return t.abrupt("return", new Promise(function(t, r) {
-                                                i.safeEmit.apply(i, [e].concat(n, [t, r]))
-                                            }));
-                                        case 2:
-                                        case "end":
-                                            return t.stop()
-                                    }
-                                }, t)
-                            }));
-                            return function(e) {
-                                return t.apply(this, arguments)
-                            }
-                        }()
-                    }]), o
-                }();
-            module.exports = m;
+            module.exports = r;
         }, {
             "events": "vY5P",
             "./Logger": "p5bA"
@@ -801,443 +649,176 @@ var
             };
         }, {}],
         "fyRg": [function(require, module, exports) {
-            function e(r) {
-                return (e = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(e) {
-                    return typeof e
-                } : function(e) {
-                    return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e
-                })(r)
-            }
-
-            function r(e, r) {
-                if (!(e instanceof r)) throw new TypeError("Cannot call a class as a function")
-            }
-
-            function o(e, r) {
-                for (var o = 0; o < r.length; o++) {
-                    var t = r[o];
-                    t.enumerable = t.enumerable || !1, t.configurable = !0, "value" in t && (t.writable = !0), Object.defineProperty(e, t.key, t)
+            const e = require("./Logger"),
+                {
+                    generateRandomNumber: r
+                } = require("./utils"),
+                i = new e("Message");
+            class t {
+                static parse(e) {
+                    let r;
+                    const t = {};
+                    try {
+                        r = JSON.parse(e)
+                    } catch (o) {
+                        return void i.error("parse() | invalid JSON: %s", o)
+                    }
+                    if ("object" == typeof r && !Array.isArray(r)) {
+                        if (r.request) {
+                            if (t.request = !0, "string" != typeof r.method) return void i.error("parse() | missing/invalid method field");
+                            if ("number" != typeof r.id) return void i.error("parse() | missing/invalid id field");
+                            t.id = r.id, t.method = r.method, t.data = r.data || {}
+                        } else if (r.response) {
+                            if (t.response = !0, "number" != typeof r.id) return void i.error("parse() | missing/invalid id field");
+                            t.id = r.id, r.ok ? (t.ok = !0, t.data = r.data || {}) : (t.ok = !1, t.errorCode = r.errorCode, t.errorReason = r.errorReason)
+                        } else {
+                            if (!r.notification) return void i.error("parse() | missing request/response field");
+                            if (t.notification = !0, "string" != typeof r.method) return void i.error("parse() | missing/invalid method field");
+                            t.method = r.method, t.data = r.data || {}
+                        }
+                        return t
+                    }
+                    i.error("parse() | not an object")
+                }
+                static createRequest(e, i) {
+                    return {
+                        request: !0,
+                        id: r(),
+                        method: e,
+                        data: i || {}
+                    }
+                }
+                static createSuccessResponse(e, r) {
+                    return {
+                        response: !0,
+                        id: e.id,
+                        ok: !0,
+                        data: r || {}
+                    }
+                }
+                static createErrorResponse(e, r, i) {
+                    return {
+                        response: !0,
+                        id: e.id,
+                        ok: !1,
+                        errorCode: r,
+                        errorReason: i
+                    }
+                }
+                static createNotification(e, r) {
+                    return {
+                        notification: !0,
+                        method: e,
+                        data: r || {}
+                    }
                 }
             }
-
-            function t(e, r, t) {
-                return r && o(e.prototype, r), t && o(e, t), e
-            }
-            var n = require("./Logger"),
-                i = require("./utils"),
-                a = i.generateRandomNumber,
-                s = new n("Message"),
-                u = function() {
-                    function o() {
-                        r(this, o)
-                    }
-                    return t(o, null, [{
-                        key: "parse",
-                        value: function(r) {
-                            var o, t = {};
-                            try {
-                                o = JSON.parse(r)
-                            } catch (n) {
-                                return void s.error("parse() | invalid JSON: %s", n)
-                            }
-                            if ("object" === e(o) && !Array.isArray(o)) {
-                                if (o.request) {
-                                    if (t.request = !0, "string" != typeof o.method) return void s.error("parse() | missing/invalid method field");
-                                    if ("number" != typeof o.id) return void s.error("parse() | missing/invalid id field");
-                                    t.id = o.id, t.method = o.method, t.data = o.data || {}
-                                } else if (o.response) {
-                                    if (t.response = !0, "number" != typeof o.id) return void s.error("parse() | missing/invalid id field");
-                                    t.id = o.id, o.ok ? (t.ok = !0, t.data = o.data || {}) : (t.ok = !1, t.errorCode = o.errorCode, t.errorReason = o.errorReason)
-                                } else {
-                                    if (!o.notification) return void s.error("parse() | missing request/response field");
-                                    if (t.notification = !0, "string" != typeof o.method) return void s.error("parse() | missing/invalid method field");
-                                    t.method = o.method, t.data = o.data || {}
-                                }
-                                return t
-                            }
-                            s.error("parse() | not an object")
-                        }
-                    }, {
-                        key: "createRequest",
-                        value: function(e, r) {
-                            return {
-                                request: !0,
-                                id: a(),
-                                method: e,
-                                data: r || {}
-                            }
-                        }
-                    }, {
-                        key: "createSuccessResponse",
-                        value: function(e, r) {
-                            return {
-                                response: !0,
-                                id: e.id,
-                                ok: !0,
-                                data: r || {}
-                            }
-                        }
-                    }, {
-                        key: "createErrorResponse",
-                        value: function(e, r, o) {
-                            return {
-                                response: !0,
-                                id: e.id,
-                                ok: !1,
-                                errorCode: r,
-                                errorReason: o
-                            }
-                        }
-                    }, {
-                        key: "createNotification",
-                        value: function(e, r) {
-                            return {
-                                notification: !0,
-                                method: e,
-                                data: r || {}
-                            }
-                        }
-                    }]), o
-                }();
-            module.exports = u;
+            module.exports = t;
         }, {
             "./Logger": "p5bA",
             "./utils": "FOZT"
         }],
         "VMrj": [function(require, module, exports) {
-            function e(t) {
-                return (e = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(e) {
-                    return typeof e
-                } : function(e) {
-                    return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e
-                })(t)
-            }
-
-            function t(e, t, n, r, o, i, c) {
-                try {
-                    var s = e[i](c),
-                        u = s.value
-                } catch (a) {
-                    return void n(a)
+            const e = require("./Logger"),
+                t = require("./EnhancedEventEmitter"),
+                s = require("./Message"),
+                o = new e("Peer");
+            class i extends t {
+                constructor(e) {
+                    super(o), o.debug("constructor()"), this._closed = !1, this._transport = e, this._connected = !1, this._data = {}, this._sents = new Map, this._handleTransport()
                 }
-                s.done ? t(u) : Promise.resolve(u).then(r, o)
-            }
-
-            function n(e) {
-                return function() {
-                    var n = this,
-                        r = arguments;
-                    return new Promise(function(o, i) {
-                        var c = e.apply(n, r);
-
-                        function s(e) {
-                            t(c, o, i, s, u, "next", e)
-                        }
-
-                        function u(e) {
-                            t(c, o, i, s, u, "throw", e)
-                        }
-                        s(void 0)
+                get closed() {
+                    return this._closed
+                }
+                get connected() {
+                    return this._connected
+                }
+                get data() {
+                    return this._data
+                }
+                set data(e) {
+                    throw new Error("cannot override data object")
+                }
+                close() {
+                    if (!this._closed) {
+                        o.debug("close()"), this._closed = !0, this._connected = !1, this._transport.close();
+                        for (const e of this._sents.values()) e.close();
+                        this.safeEmit("close")
+                    }
+                }
+                async request(e, t) {
+                    const o = s.createRequest(e, t);
+                    return this._logger.debug("request() [method:%s, id:%s]", e, o.id), await this._transport.send(o), new Promise((e, t) => {
+                        const s = 1500 * (15 + .1 * this._sents.size),
+                            i = {
+                                id: o.id,
+                                method: o.method,
+                                resolve: t => {
+                                    this._sents.delete(o.id) && (clearTimeout(i.timer), e(t))
+                                },
+                                reject: e => {
+                                    this._sents.delete(o.id) && (clearTimeout(i.timer), t(e))
+                                },
+                                timer: setTimeout(() => {
+                                    this._sents.delete(o.id) && t(new Error("request timeout"))
+                                }, s),
+                                close: () => {
+                                    clearTimeout(i.timer), t(new Error("peer closed"))
+                                }
+                            };
+                        this._sents.set(o.id, i)
                     })
                 }
-            }
-
-            function r(e, t) {
-                var n;
-                if ("undefined" == typeof Symbol || null == e[Symbol.iterator]) {
-                    if (Array.isArray(e) || (n = o(e)) || t && e && "number" == typeof e.length) {
-                        n && (e = n);
-                        var r = 0,
-                            i = function() {};
-                        return {
-                            s: i,
-                            n: function() {
-                                return r >= e.length ? {
-                                    done: !0
-                                } : {
-                                    done: !1,
-                                    value: e[r++]
-                                }
-                            },
-                            e: function(e) {
-                                throw e
-                            },
-                            f: i
-                        }
-                    }
-                    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")
+                async notify(e, t) {
+                    const o = s.createNotification(e, t);
+                    this._logger.debug("notify() [method:%s]", e), await this._transport.send(o)
                 }
-                var c, s = !0,
-                    u = !1;
-                return {
-                    s: function() {
-                        n = e[Symbol.iterator]()
-                    },
-                    n: function() {
-                        var e = n.next();
-                        return s = e.done, e
-                    },
-                    e: function(e) {
-                        u = !0, c = e
-                    },
-                    f: function() {
-                        try {
-                            s || null == n.return || n.return()
-                        } finally {
-                            if (u) throw c
-                        }
+                _handleTransport() {
+                    if (this._transport.closed) return this._closed = !0, void setTimeout(() => {
+                        this._closed || (this._connected = !1, this.safeEmit("close"))
+                    });
+                    this._transport.on("open", () => {
+                        this._closed || (o.debug('emit "open"'), this._connected = !0, this.safeEmit("open"))
+                    }), this._transport.on("disconnected", () => {
+                        this._closed || (o.debug('emit "disconnected"'), this._connected = !1, this.safeEmit("disconnected"))
+                    }), this._transport.on("failed", e => {
+                        this._closed || (o.debug('emit "failed" [currentAttempt:%s]', e), this._connected = !1, this.safeEmit("failed", e))
+                    }), this._transport.on("close", () => {
+                        this._closed || (this._closed = !0, o.debug('emit "close"'), this._connected = !1, this.safeEmit("close"))
+                    }), this._transport.on("message", e => {
+                        e.request ? this._handleRequest(e) : e.response ? this._handleResponse(e) : e.notification && this._handleNotification(e)
+                    })
+                }
+                _handleRequest(e) {
+                    try {
+                        this.emit("request", e, t => {
+                            const o = s.createSuccessResponse(e, t);
+                            this._transport.send(o).catch(() => {})
+                        }, (t, o) => {
+                            t instanceof Error ? (t = 500, o = String(t)) : "number" == typeof t && o instanceof Error && (o = String(o));
+                            const i = s.createErrorResponse(e, t, o);
+                            this._transport.send(i).catch(() => {})
+                        })
+                    } catch (t) {
+                        const o = s.createErrorResponse(e, 500, String(t));
+                        this._transport.send(o).catch(() => {})
                     }
                 }
-            }
-
-            function o(e, t) {
-                if (e) {
-                    if ("string" == typeof e) return i(e, t);
-                    var n = Object.prototype.toString.call(e).slice(8, -1);
-                    return "Object" === n && e.constructor && (n = e.constructor.name), "Map" === n || "Set" === n ? Array.from(e) : "Arguments" === n || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n) ? i(e, t) : void 0
+                _handleResponse(e) {
+                    const t = this._sents.get(e.id);
+                    if (t)
+                        if (e.ok) t.resolve(e.data);
+                        else {
+                            const s = new Error(e.errorReason);
+                            s.code = e.errorCode, t.reject(s)
+                        }
+                    else o.error("received response does not match any sent request [id:%s]", e.id)
+                }
+                _handleNotification(e) {
+                    this.safeEmit("notification", e)
                 }
             }
-
-            function i(e, t) {
-                (null == t || t > e.length) && (t = e.length);
-                for (var n = 0, r = new Array(t); n < t; n++) r[n] = e[n];
-                return r
-            }
-
-            function c(e, t) {
-                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function")
-            }
-
-            function s(e, t) {
-                for (var n = 0; n < t.length; n++) {
-                    var r = t[n];
-                    r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r)
-                }
-            }
-
-            function u(e, t, n) {
-                return t && s(e.prototype, t), n && s(e, n), e
-            }
-
-            function a(e, t) {
-                if ("function" != typeof t && null !== t) throw new TypeError("Super expression must either be null or a function");
-                e.prototype = Object.create(t && t.prototype, {
-                    constructor: {
-                        value: e,
-                        writable: !0,
-                        configurable: !0
-                    }
-                }), t && f(e, t)
-            }
-
-            function f(e, t) {
-                return (f = Object.setPrototypeOf || function(e, t) {
-                    return e.__proto__ = t, e
-                })(e, t)
-            }
-
-            function l(e) {
-                var t = h();
-                return function() {
-                    var n, r = y(e);
-                    if (t) {
-                        var o = y(this).constructor;
-                        n = Reflect.construct(r, arguments, o)
-                    } else n = r.apply(this, arguments);
-                    return d(this, n)
-                }
-            }
-
-            function d(t, n) {
-                return !n || "object" !== e(n) && "function" != typeof n ? p(t) : n
-            }
-
-            function p(e) {
-                if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-                return e
-            }
-
-            function h() {
-                if ("undefined" == typeof Reflect || !Reflect.construct) return !1;
-                if (Reflect.construct.sham) return !1;
-                if ("function" == typeof Proxy) return !0;
-                try {
-                    return Date.prototype.toString.call(Reflect.construct(Date, [], function() {})), !0
-                } catch (e) {
-                    return !1
-                }
-            }
-
-            function y(e) {
-                return (y = Object.setPrototypeOf ? Object.getPrototypeOf : function(e) {
-                    return e.__proto__ || Object.getPrototypeOf(e)
-                })(e)
-            }
-            var m = require("./Logger"),
-                v = require("./EnhancedEventEmitter"),
-                _ = require("./Message"),
-                b = new m("Peer"),
-                g = function(e) {
-                    a(o, v);
-                    var t = l(o);
-
-                    function o(e) {
-                        var n;
-                        return c(this, o), n = t.call(this, b), b.debug("constructor()"), n._closed = !1, n._transport = e, n._connected = !1, n._data = {}, n._sents = new Map, n._handleTransport(), n
-                    }
-                    return u(o, [{
-                        key: "close",
-                        value: function() {
-                            if (!this._closed) {
-                                b.debug("close()"), this._closed = !0, this._connected = !1, this._transport.close();
-                                var e, t = r(this._sents.values());
-                                try {
-                                    for (t.s(); !(e = t.n()).done;) {
-                                        e.value.close()
-                                    }
-                                } catch (n) {
-                                    t.e(n)
-                                } finally {
-                                    t.f()
-                                }
-                                this.safeEmit("close")
-                            }
-                        }
-                    }, {
-                        key: "request",
-                        value: function() {
-                            var e = n(regeneratorRuntime.mark(function e(t) {
-                                var n, r, o = this,
-                                    i = arguments;
-                                return regeneratorRuntime.wrap(function(e) {
-                                    for (;;) switch (e.prev = e.next) {
-                                        case 0:
-                                            return n = i.length > 1 && void 0 !== i[1] ? i[1] : void 0, r = _.createRequest(t, n), this._logger.debug("request() [method:%s, id:%s]", t, r.id), e.next = 5, this._transport.send(r);
-                                        case 5:
-                                            return e.abrupt("return", new Promise(function(e, t) {
-                                                var n = 1500 * (15 + .1 * o._sents.size),
-                                                    i = {
-                                                        id: r.id,
-                                                        method: r.method,
-                                                        resolve: function(t) {
-                                                            o._sents.delete(r.id) && (clearTimeout(i.timer), e(t))
-                                                        },
-                                                        reject: function(e) {
-                                                            o._sents.delete(r.id) && (clearTimeout(i.timer), t(e))
-                                                        },
-                                                        timer: setTimeout(function() {
-                                                            o._sents.delete(r.id) && t(new Error("request timeout"))
-                                                        }, n),
-                                                        close: function() {
-                                                            clearTimeout(i.timer), t(new Error("peer closed"))
-                                                        }
-                                                    };
-                                                o._sents.set(r.id, i)
-                                            }));
-                                        case 6:
-                                        case "end":
-                                            return e.stop()
-                                    }
-                                }, e, this)
-                            }));
-                            return function(t) {
-                                return e.apply(this, arguments)
-                            }
-                        }()
-                    }, {
-                        key: "notify",
-                        value: function() {
-                            var e = n(regeneratorRuntime.mark(function e(t) {
-                                var n, r, o = arguments;
-                                return regeneratorRuntime.wrap(function(e) {
-                                    for (;;) switch (e.prev = e.next) {
-                                        case 0:
-                                            return n = o.length > 1 && void 0 !== o[1] ? o[1] : void 0, r = _.createNotification(t, n), this._logger.debug("notify() [method:%s]", t), e.next = 5, this._transport.send(r);
-                                        case 5:
-                                        case "end":
-                                            return e.stop()
-                                    }
-                                }, e, this)
-                            }));
-                            return function(t) {
-                                return e.apply(this, arguments)
-                            }
-                        }()
-                    }, {
-                        key: "_handleTransport",
-                        value: function() {
-                            var e = this;
-                            if (this._transport.closed) return this._closed = !0, void setTimeout(function() {
-                                e._closed || (e._connected = !1, e.safeEmit("close"))
-                            });
-                            this._transport.on("open", function() {
-                                e._closed || (b.debug('emit "open"'), e._connected = !0, e.safeEmit("open"))
-                            }), this._transport.on("disconnected", function() {
-                                e._closed || (b.debug('emit "disconnected"'), e._connected = !1, e.safeEmit("disconnected"))
-                            }), this._transport.on("failed", function(t) {
-                                e._closed || (b.debug('emit "failed" [currentAttempt:%s]', t), e._connected = !1, e.safeEmit("failed", t))
-                            }), this._transport.on("close", function() {
-                                e._closed || (e._closed = !0, b.debug('emit "close"'), e._connected = !1, e.safeEmit("close"))
-                            }), this._transport.on("message", function(t) {
-                                t.request ? e._handleRequest(t) : t.response ? e._handleResponse(t) : t.notification && e._handleNotification(t)
-                            })
-                        }
-                    }, {
-                        key: "_handleRequest",
-                        value: function(e) {
-                            var t = this;
-                            try {
-                                this.emit("request", e, function(n) {
-                                    var r = _.createSuccessResponse(e, n);
-                                    t._transport.send(r).catch(function() {})
-                                }, function(n, r) {
-                                    n instanceof Error ? (n = 500, r = String(n)) : "number" == typeof n && r instanceof Error && (r = String(r));
-                                    var o = _.createErrorResponse(e, n, r);
-                                    t._transport.send(o).catch(function() {})
-                                })
-                            } catch (r) {
-                                var n = _.createErrorResponse(e, 500, String(r));
-                                this._transport.send(n).catch(function() {})
-                            }
-                        }
-                    }, {
-                        key: "_handleResponse",
-                        value: function(e) {
-                            var t = this._sents.get(e.id);
-                            if (t)
-                                if (e.ok) t.resolve(e.data);
-                                else {
-                                    var n = new Error(e.errorReason);
-                                    n.code = e.errorCode, t.reject(n)
-                                }
-                            else b.error("received response does not match any sent request [id:%s]", e.id)
-                        }
-                    }, {
-                        key: "_handleNotification",
-                        value: function(e) {
-                            this.safeEmit("notification", e)
-                        }
-                    }, {
-                        key: "closed",
-                        get: function() {
-                            return this._closed
-                        }
-                    }, {
-                        key: "connected",
-                        get: function() {
-                            return this._connected
-                        }
-                    }, {
-                        key: "data",
-                        get: function() {
-                            return this._data
-                        },
-                        set: function(e) {
-                            throw new Error("cannot override data object")
-                        }
-                    }]), o
-                }();
-            module.exports = g;
+            module.exports = i;
         }, {
             "./Logger": "p5bA",
             "./EnhancedEventEmitter": "Oomd",
@@ -1492,213 +1073,73 @@ var
             "./lib/retry": "rxeB"
         }],
         "l4pJ": [function(require, module, exports) {
-            function e(t) {
-                return (e = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(e) {
-                    return typeof e
-                } : function(e) {
-                    return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e
-                })(t)
-            }
-
-            function t(e, t, n, r, o, s, i) {
-                try {
-                    var c = e[s](i),
-                        u = c.value
-                } catch (f) {
-                    return void n(f)
-                }
-                c.done ? t(u) : Promise.resolve(u).then(r, o)
-            }
-
-            function n(e) {
-                return function() {
-                    var n = this,
-                        r = arguments;
-                    return new Promise(function(o, s) {
-                        var i = e.apply(n, r);
-
-                        function c(e) {
-                            t(i, o, s, c, u, "next", e)
-                        }
-
-                        function u(e) {
-                            t(i, o, s, c, u, "throw", e)
-                        }
-                        c(void 0)
-                    })
-                }
-            }
-
-            function r(e, t) {
-                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function")
-            }
-
-            function o(e, t) {
-                for (var n = 0; n < t.length; n++) {
-                    var r = t[n];
-                    r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r)
-                }
-            }
-
-            function s(e, t, n) {
-                return t && o(e.prototype, t), n && o(e, n), e
-            }
-
-            function i(e, t) {
-                if ("function" != typeof t && null !== t) throw new TypeError("Super expression must either be null or a function");
-                e.prototype = Object.create(t && t.prototype, {
-                    constructor: {
-                        value: e,
-                        writable: !0,
-                        configurable: !0
-                    }
-                }), t && c(e, t)
-            }
-
-            function c(e, t) {
-                return (c = Object.setPrototypeOf || function(e, t) {
-                    return e.__proto__ = t, e
-                })(e, t)
-            }
-
-            function u(e) {
-                var t = l();
-                return function() {
-                    var n, r = p(e);
-                    if (t) {
-                        var o = p(this).constructor;
-                        n = Reflect.construct(r, arguments, o)
-                    } else n = r.apply(this, arguments);
-                    return f(this, n)
-                }
-            }
-
-            function f(t, n) {
-                return !n || "object" !== e(n) && "function" != typeof n ? a(t) : n
-            }
-
-            function a(e) {
-                if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-                return e
-            }
-
-            function l() {
-                if ("undefined" == typeof Reflect || !Reflect.construct) return !1;
-                if (Reflect.construct.sham) return !1;
-                if ("function" == typeof Proxy) return !0;
-                try {
-                    return Date.prototype.toString.call(Reflect.construct(Date, [], function() {})), !0
-                } catch (e) {
-                    return !1
-                }
-            }
-
-            function p(e) {
-                return (p = Object.setPrototypeOf ? Object.getPrototypeOf : function(e) {
-                    return e.__proto__ || Object.getPrototypeOf(e)
-                })(e)
-            }
-            var _ = require("websocket").w3cwebsocket,
-                d = require("retry"),
-                y = require("../Logger"),
-                h = require("../EnhancedEventEmitter"),
-                b = require("../Message"),
-                m = "protoo",
-                w = {
+            const e = require("websocket").w3cwebsocket,
+                s = require("retry"),
+                t = require("../Logger"),
+                o = require("../EnhancedEventEmitter"),
+                r = require("../Message"),
+                i = "protoo",
+                n = {
                     retries: 10,
                     factor: 2,
                     minTimeout: 1e3,
                     maxTimeout: 8e3
                 },
-                v = new y("WebSocketTransport"),
-                g = function(e) {
-                    i(o, h);
-                    var t = u(o);
-
-                    function o(e, n) {
-                        var s;
-                        return r(this, o), s = t.call(this, v), v.debug("constructor() [url:%s, options:%o]", e, n), s._closed = !1, s._url = e, s._options = n || {}, s._ws = null, s._runWebSocket(), s
+                c = new t("WebSocketTransport");
+            class h extends o {
+                constructor(e, s) {
+                    super(c), c.debug("constructor() [url:%s, options:%o]", e, s), this._closed = !1, this._url = e, this._options = s || {}, this._ws = null, this._runWebSocket()
+                }
+                get closed() {
+                    return this._closed
+                }
+                close() {
+                    if (!this._closed) {
+                        c.debug("close()"), this._closed = !0, this.safeEmit("close");
+                        try {
+                            this._ws.onopen = null, this._ws.onclose = null, this._ws.onerror = null, this._ws.onmessage = null, this._ws.close()
+                        } catch (e) {
+                            c.error("close() | error closing the WebSocket: %o", e)
+                        }
                     }
-                    return s(o, [{
-                        key: "close",
-                        value: function() {
+                }
+                async send(e) {
+                    if (this._closed) throw new Error("transport closed");
+                    try {
+                        this._ws.send(JSON.stringify(e))
+                    } catch (s) {
+                        throw c.warn("send() failed:%o", s), s
+                    }
+                }
+                _runWebSocket() {
+                    const t = s.operation(this._options.retry || n);
+                    let o = !1;
+                    t.attempt(s => {
+                        this._closed ? t.stop() : (c.debug("_runWebSocket() [currentAttempt:%s]", s), this._ws = new e(this._url, i, this._options.origin, this._options.headers, this._options.requestOptions, this._options.clientConfig), this._ws.onopen = (() => {
+                            this._closed || (o = !0, this.safeEmit("open"))
+                        }), this._ws.onclose = (e => {
                             if (!this._closed) {
-                                v.debug("close()"), this._closed = !0, this.safeEmit("close");
-                                try {
-                                    this._ws.onopen = null, this._ws.onclose = null, this._ws.onerror = null, this._ws.onmessage = null, this._ws.close()
-                                } catch (e) {
-                                    v.error("close() | error closing the WebSocket: %o", e)
+                                if (c.warn('WebSocket "close" event [wasClean:%s, code:%s, reason:"%s"]', e.wasClean, e.code, e.reason), 4e3 !== e.code) {
+                                    if (o) {
+                                        if (t.stop(), this.safeEmit("disconnected"), this._closed) return;
+                                        return void this._runWebSocket()
+                                    }
+                                    if (this.safeEmit("failed", s), this._closed) return;
+                                    if (t.retry(!0)) return
                                 }
+                                this._closed = !0, this.safeEmit("close")
                             }
-                        }
-                    }, {
-                        key: "send",
-                        value: function() {
-                            var e = n(regeneratorRuntime.mark(function e(t) {
-                                return regeneratorRuntime.wrap(function(e) {
-                                    for (;;) switch (e.prev = e.next) {
-                                        case 0:
-                                            if (!this._closed) {
-                                                e.next = 2;
-                                                break
-                                            }
-                                            throw new Error("transport closed");
-                                        case 2:
-                                            e.prev = 2, this._ws.send(JSON.stringify(t)), e.next = 10;
-                                            break;
-                                        case 6:
-                                            throw e.prev = 6, e.t0 = e.catch(2), v.warn("send() failed:%o", e.t0), e.t0;
-                                        case 10:
-                                        case "end":
-                                            return e.stop()
-                                    }
-                                }, e, this, [
-                                    [2, 6]
-                                ])
-                            }));
-                            return function(t) {
-                                return e.apply(this, arguments)
-                            }
-                        }()
-                    }, {
-                        key: "_runWebSocket",
-                        value: function() {
-                            var e = this,
-                                t = d.operation(this._options.retry || w),
-                                n = !1;
-                            t.attempt(function(r) {
-                                e._closed ? t.stop() : (v.debug("_runWebSocket() [currentAttempt:%s]", r), e._ws = new _(e._url, m, e._options.origin, e._options.headers, e._options.requestOptions, e._options.clientConfig), e._ws.onopen = function() {
-                                    e._closed || (n = !0, e.safeEmit("open"))
-                                }, e._ws.onclose = function(o) {
-                                    if (!e._closed) {
-                                        if (v.warn('WebSocket "close" event [wasClean:%s, code:%s, reason:"%s"]', o.wasClean, o.code, o.reason), 4e3 !== o.code) {
-                                            if (n) {
-                                                if (t.stop(), e.safeEmit("disconnected"), e._closed) return;
-                                                return void e._runWebSocket()
-                                            }
-                                            if (e.safeEmit("failed", r), e._closed) return;
-                                            if (t.retry(!0)) return
-                                        }
-                                        e._closed = !0, e.safeEmit("close")
-                                    }
-                                }, e._ws.onerror = function() {
-                                    e._closed || v.error('WebSocket "error" event')
-                                }, e._ws.onmessage = function(t) {
-                                    if (!e._closed) {
-                                        var n = b.parse(t.data);
-                                        n && (0 !== e.listenerCount("message") ? e.safeEmit("message", n) : v.error('no listeners for WebSocket "message" event, ignoring received message'))
-                                    }
-                                })
-                            })
-                        }
-                    }, {
-                        key: "closed",
-                        get: function() {
-                            return this._closed
-                        }
-                    }]), o
-                }();
-            module.exports = g;
+                        }), this._ws.onerror = (() => {
+                            this._closed || c.error('WebSocket "error" event')
+                        }), this._ws.onmessage = (e => {
+                            if (this._closed) return;
+                            const s = r.parse(e.data);
+                            s && (0 !== this.listenerCount("message") ? this.safeEmit("message", s) : c.error('no listeners for WebSocket "message" event, ignoring received message'))
+                        }))
+                    })
+                }
+            }
+            module.exports = h;
         }, {
             "websocket": "eEKz",
             "retry": "jaZo",
@@ -1707,11 +1148,10 @@ var
             "../Message": "fyRg"
         }],
         "Focm": [function(require, module, exports) {
-            var e = require("../package.json"),
-                r = e.version,
-                o = require("./Peer"),
-                s = require("./transports/WebSocketTransport");
-            exports.version = r, exports.Peer = o, exports.WebSocketTransport = s;
+            const {
+                version: e
+            } = require("../package.json"), r = require("./Peer"), o = require("./transports/WebSocketTransport");
+            exports.version = e, exports.Peer = r, exports.WebSocketTransport = o;
         }, {
             "../package.json": "EHrm",
             "./Peer": "VMrj",
