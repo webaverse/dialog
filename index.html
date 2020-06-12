@@ -7,32 +7,7 @@
 <body>
 <script type=module>
 import RoomClient from './client/RoomClient.js';
-import bowser from'./bowser/src/bowser.js';
 
-function deviceInfo() {
-  const ua = navigator.userAgent;
-  const browser = bowser.getParser(ua);
-  let flag;
-
-  if (browser.satisfies({ chrome: '>=0', chromium: '>=0' }))
-    flag = 'chrome';
-  else if (browser.satisfies({ firefox: '>=0' }))
-    flag = 'firefox';
-  else if (browser.satisfies({ safari: '>=0' }))
-    flag = 'safari';
-  else if (browser.satisfies({ opera: '>=0' }))
-    flag = 'opera';
-  else if (browser.satisfies({ 'microsoft edge': '>=0' }))
-    flag = 'edge';
-  else
-    flag = 'unknown';
-
-  return {
-    flag,
-    name    : browser.getBrowserName(),
-    version : browser.getBrowserVersion()
-  };
-}
 function randomName() {
   return Math.random().toString(36).substring(7);
 }
@@ -46,7 +21,6 @@ const roomId = 'room1';
 const peerId = randomName();
 const displayName = randomName();
 // Get current device info.
-const device = deviceInfo();
 
 /* store.dispatch(
 	stateActions.setRoomUrl(roomUrl));
@@ -61,10 +35,6 @@ const roomClient = new RoomClient({
 	roomId,
 	peerId,
 	displayName,
-	device,
-  produce: true,
-  consume: true,
-  datachannel: true,
 	/* handlerName : handler,
 	useSimulcast,
 	useSharingSimulcast,

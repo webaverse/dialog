@@ -1,10 +1,36 @@
-import protooClient from '../protoo-client/build.js';
-import mediasoupClient from '../mediasoup-client/build.js';
+import protooClient from './protoo-client/build.js';
+import mediasoupClient from './mediasoup-client/build.js';
+import bowser from'./bowser/src/bowser.js';
 // import Logger from './Logger.js';
 // import { getProtooUrl } from './urlFactory.js';
 // import * as cookiesManager from './cookiesManager.js';
 // import * as requestActions from './redux/requestActions';
 // import * as stateActions from './redux/stateActions';
+
+function deviceInfo() {
+  const ua = navigator.userAgent;
+  const browser = bowser.getParser(ua);
+  let flag;
+
+  if (browser.satisfies({ chrome: '>=0', chromium: '>=0' }))
+    flag = 'chrome';
+  else if (browser.satisfies({ firefox: '>=0' }))
+    flag = 'firefox';
+  else if (browser.satisfies({ safari: '>=0' }))
+    flag = 'safari';
+  else if (browser.satisfies({ opera: '>=0' }))
+    flag = 'opera';
+  else if (browser.satisfies({ 'microsoft edge': '>=0' }))
+    flag = 'edge';
+  else
+    flag = 'unknown';
+
+  return {
+    flag,
+    name    : browser.getBrowserName(),
+    version : browser.getBrowserVersion()
+  };
+}
 
 const apiHost = 'rtc.exokit.org:4443';
 function getProtooUrl({ roomId, peerId }) {
@@ -77,17 +103,17 @@ export default class RoomClient extends EventTarget
 			roomId,
 			peerId,
 			displayName,
-			device,
+			device = deviceInfo(),
 			handlerName,
 			useSimulcast,
 			useSharingSimulcast,
 			forceTcp,
-			produce,
-			consume,
+			produce = true,
+			consume = true,
 			forceH264,
 			forceVP9,
 			svc,
-			datachannel,
+			datachannel = true,
 			externalVideo
 		}
 	)
