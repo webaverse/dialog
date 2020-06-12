@@ -127,7 +127,7 @@ const config =
 			listenIps :
 			[
 				{
-					ip : process.env.MEDIASOUP_LISTEN_IP || '13.56.80.83'
+					ip : process.env.MEDIASOUP_LISTEN_IP || '172.31.16.193'
 				},
 				{
 					ip          : '0.0.0.0',
