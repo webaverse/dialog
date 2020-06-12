@@ -374,6 +374,7 @@ export default class RoomClient extends EventTarget
 
 							this.dispatchEvent(new MessageEvent('removereceivestream', {
 								data: {
+									peerId,
 								    consumer,
 								},
 							}));
@@ -409,6 +410,7 @@ export default class RoomClient extends EventTarget
 							this._pauseConsumer(consumer); */
 					    this.dispatchEvent(new MessageEvent('addreceivestream', {
 							data: {
+								peerId,
 							    consumer,
 							},
 						}));
@@ -481,6 +483,7 @@ export default class RoomClient extends EventTarget
 
 							this.dispatchEvent(new MessageEvent('addreceive', {
 								data: {
+									peerId,
 								    dataConsumer,
 								},
 							}));
@@ -494,6 +497,7 @@ export default class RoomClient extends EventTarget
 
 							this.dispatchEvent(new MessageEvent('removereceive', {
 								data: {
+									peerId,
 								    dataConsumer,
 								},
 							}));

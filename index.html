@@ -104,26 +104,26 @@ roomClient.addEventListener('removesend', e => {
   console.log('remove send', id, _dataChannel);
 });
 roomClient.addEventListener('addreceive', e => {
-  const {data: {dataConsumer: {id, _dataChannel}}} = e;
-  console.log('add data consumer', id, _dataChannel);
+  const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
+  console.log('add data consumer', peerId, _dataChannel);
   _dataChannel.addEventListener('message', e => {
-    console.log('got data message', e);
+    console.log('got data message', peerId, e);
   });
 });
 roomClient.addEventListener('removereceive', e => {
-  const {data: {dataConsumer: {id, _dataChannel}}} = e;
-  console.log('add data consumer', id, _dataChannel);
+  const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
+  console.log('add data consumer', peerId, _dataChannel);
 });
 /* roomClient.addEventListener('message', e => {
   console.log('message', e);
 }); */
 roomClient.addEventListener('addreceivestream', e => {
-  const {data: {consumer: {id, _track}}} = e;
-  console.log('add receive stream', id, _track);
+  const {data: {peerId, consumer: {id, _track}}} = e;
+  console.log('add receive stream', peerId, _track);
 });
 roomClient.addEventListener('removereceivestream', e => {
-  const {data: {consumer: {id, _track}}} = e;
-  console.log('remove receive stream', id, _track);
+  const {data: {peerId, consumer: {id, _track}}} = e;
+  console.log('remove receive stream', peerId, _track);
 });
 
 roomClient.join();
