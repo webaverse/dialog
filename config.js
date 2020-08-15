@@ -32,7 +32,7 @@ const config =
 	{
 		listenIp   : '0.0.0.0',
 		// NOTE: Don't change listenPort (client app assumes 4443).
-		listenPort : process.env.ADMIN_LISTEN_PORT || 4443
+		listenPort : process.env.ADMIN_LISTEN_PORT || 7000
 	},
 	// mediasoup settings.
 	mediasoup :
@@ -127,7 +127,7 @@ const config =
 			listenIps :
 			[
 				{
-					ip : process.env.MEDIASOUP_LISTEN_IP
+					ip : process.env.MEDIASOUP_LISTEN_IP || '127.0.0.1'
 				},
 				{
 					ip          : '0.0.0.0',
