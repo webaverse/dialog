@@ -831,6 +831,24 @@ export default class RoomClient extends EventTarget
 					break;
 				}
 
+				case 'getAllState':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'getState':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'setState':
+				{
+					console.log(notification.data)
+					break;
+				}
+
 				default:
 				{
 					logger.error(
