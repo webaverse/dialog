@@ -33,7 +33,34 @@ const getFile = async (key) => {
     })
 }
 
+const lockFiles = (keys) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log('locked these keys yolo:', keys)
+            resolve(true)
+        } catch (e) {
+            console.error(e);
+            reject(false);
+        }
+    })
+}
+
+const evalSrc = (src) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log(src)
+            eval(src)
+            resolve();
+        } catch (e) {
+            console.error(e);
+            reject();
+        }
+    })
+}
+
 module.exports = {
     writeFile: writeFile,
-    getFile: getFile
+    getFile: getFile,
+    evalSrc: evalSrc,
+    lockFiles: lockFiles
 }
