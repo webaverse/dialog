@@ -849,6 +849,12 @@ export default class RoomClient extends EventTarget
 					break;
 				}
 
+				case 'runScript':
+				{
+					console.log(notification.data)
+					break;
+				}
+
 				default:
 				{
 					logger.error(
