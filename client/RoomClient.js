@@ -855,6 +855,12 @@ export default class RoomClient extends EventTarget
 					break;
 				}
 
+				case 'getFile':
+				{
+					console.log(notification.data)
+					break;
+				}
+
 				default:
 				{
 					logger.error(
