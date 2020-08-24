@@ -62,3 +62,8 @@ typings/
 
 .serverless
 results
+
+# webaverse custom ignores
+certs
+chunkSrc
+*.heapsnapshot
