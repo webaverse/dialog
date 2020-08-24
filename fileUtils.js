@@ -1,8 +1,7 @@
 const fs = require('fs');
-
 const lockMap = new Map();
 
-const writeFile = async (path, src) => {
+const writeFile = (path, src) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (lockMap.get(key) && !lockMap.get(key).locked) {
@@ -22,7 +21,7 @@ const writeFile = async (path, src) => {
     })
 }
 
-const getFile = async (key) => {
+const getFile = (key) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (lockMap.get(key) && !lockMap.get(key).locked) {
@@ -46,7 +45,7 @@ const getFile = async (key) => {
 }
 
 const lockFiles = (keys) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             keys.forEach(key => {
                 lockMap.set(key, { locked: true });
@@ -60,7 +59,7 @@ const lockFiles = (keys) => {
 }
 
 const unlockFiles = (keys) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             keys.forEach(key => {
                 lockMap.set(key, { locked: false });
@@ -74,9 +73,8 @@ const unlockFiles = (keys) => {
 }
 
 const evalSrc = (src) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
-            console.log(src)
             eval(src)
             resolve();
         } catch (e) {
