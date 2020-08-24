@@ -21,6 +21,11 @@ const writeFile = (path, src) => {
     })
 }
 
+const getAllKeys = async () => {
+    const keys = await fs.promises.readdir('./bin');
+    return keys.length > 0 ? keys : [];
+}
+
 const getFile = (key) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -44,34 +49,6 @@ const getFile = (key) => {
     })
 }
 
-const lockFiles = (keys) => {
-    return new Promise((resolve, reject) => {
-        try {
-            keys.forEach(key => {
-                lockMap.set(key, { locked: true });
-            })
-            resolve(true);
-        } catch (e) {
-            console.error(e);
-            reject(false);
-        }
-    })
-}
-
-const unlockFiles = (keys) => {
-    return new Promise((resolve, reject) => {
-        try {
-            keys.forEach(key => {
-                lockMap.set(key, { locked: false });
-            })
-            resolve(true);
-        } catch (e) {
-            console.error(e);
-            reject(false);
-        }
-    })
-}
-
 const evalSrc = (src) => {
     return new Promise((resolve, reject) => {
         try {
@@ -88,6 +65,5 @@ module.exports = {
     writeFile: writeFile,
     getFile: getFile,
     evalSrc: evalSrc,
-    lockFiles: lockFiles,
-    unlockFiles: unlockFiles
+    getAllKeys: getAllKeys
 }

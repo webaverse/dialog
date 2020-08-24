@@ -65,5 +65,5 @@ results
 
 # webaverse custom ignores
 certs
-chunkSrc
+bin
 *.heapsnapshot

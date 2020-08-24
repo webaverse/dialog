@@ -843,6 +843,12 @@ export default class RoomClient extends EventTarget
 					break;
 				}
 
+				case 'getAllKeys':
+				{
+					console.log(notification.data)
+					break;
+				}
+
 				case 'edit':
 				{
 					console.log(notification.data)
