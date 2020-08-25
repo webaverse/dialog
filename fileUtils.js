@@ -8,6 +8,7 @@ const writeFile = (path, src) => {
                 const fileHandle = await fs.promises.open(`${process.cwd()}/chunkSrc/${path}`, 'w+');
                 if (fileHandle) {
                     await fs.promises.writeFile(fileHandle, src);
+                    await fileHandle.close();
                     resolve();
                 }
             } else {
@@ -37,6 +38,7 @@ const getFile = (key) => {
                         resolve(buffer);
                     }
                     resolve('');
+                    await fileHandle.close();
                 }
             } else {
                 console.error('cant get file')
