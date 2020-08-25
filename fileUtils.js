@@ -1,17 +1,15 @@
 const fs = require('fs');
 
-const writeFile = (path, src) => {
-    return new Promise(async (resolve, reject) => {
-        const fileHandle = await fs.promises.open(`${process.cwd()}/chunkSrc/${path}`, 'w+');
-        if (fileHandle) {
-            await fs.promises.writeFile(fileHandle, src);
-            await fileHandle.close();
-            resolve();
-        } else {
-            console.error('failed to write to file')
-            reject()
-        }
-    })
+const writeFile = async (path, src) => {
+    const fileHandle = await fs.promises.open(`${process.cwd()}/chunkSrc/${path}`, 'w+');
+    if (fileHandle) {
+        await fs.promises.writeFile(fileHandle, src);
+        await fileHandle.close();
+        return;
+    } else {
+        console.error('failed to write to file')
+        return;
+    }
 }
 
 const getAllKeys = async () => {
@@ -19,21 +17,21 @@ const getAllKeys = async () => {
     return keys.length > 0 ? keys : [];
 }
 
-const getFile = (key) => {
-    return new Promise(async (resolve, reject) => {
-        const fileHandle = await fs.promises.open(`${process.cwd()}/chunkSrc/${key}`, 'r');
-        if (fileHandle) {
-            const buffer = await fs.promises.readFile(fileHandle);
-            if (buffer) {
-                resolve(buffer);
-            }
-            resolve(null);
+const getFile = async (key) => {
+    const fileHandle = await fs.promises.open(`${process.cwd()}/chunkSrc/${key}`, 'r');
+    if (fileHandle) {
+        const buffer = await fs.promises.readFile(fileHandle);
+        if (buffer) {
             await fileHandle.close();
-        } else {
-            console.error('cant get file')
-            reject()
-        }      
-    })
+            return buffer;
+        }
+        await fileHandle.close();
+        return null;
+    } else {
+        await fileHandle.close();
+        console.error('cant get file')
+        return null;
+    }      
 }
 
 module.exports = {
