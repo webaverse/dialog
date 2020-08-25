@@ -27,7 +27,7 @@ const getFile = (key) => {
             if (buffer) {
                 resolve(buffer);
             }
-            resolve('');
+            resolve(null);
             await fileHandle.close();
         } else {
             console.error('cant get file')
