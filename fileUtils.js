@@ -11,7 +11,7 @@ const writeFile = (path, src) => {
                     resolve();
                 }
             } else {
-                console.error('request for writeFile is touching a locked file, denied.')
+                console.error('failed to write to file')
                 reject()
             }
         } catch (e) {
@@ -39,7 +39,7 @@ const getFile = (key) => {
                     resolve('');
                 }
             } else {
-                console.error('request for getFile is touching a locked file, denied.')
+                console.error('cant get file')
                 reject()
             }      
         } catch (e) {
