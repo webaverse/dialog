@@ -34,7 +34,7 @@ const getFile = (key) => {
                 if (fileHandle) {
                     const buffer = await fs.promises.readFile(fileHandle);
                     if (buffer) {
-                        resolve(buffer.toString());
+                        resolve(buffer);
                     }
                     resolve('');
                 }
