@@ -861,6 +861,12 @@ export default class RoomClient extends EventTarget
 					break;
 				}
 
+				case 'uploadBinary':
+				{
+					console.log(notification.data)
+					break;
+				}
+
 				default:
 				{
 					logger.error(
