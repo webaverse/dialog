@@ -13,7 +13,7 @@ const writeFile = async (path, src) => {
 }
 
 const getAllKeys = async () => {
-    const keys = await fs.promises.readdir('./bin');
+    const keys = await fs.promises.readdir('./lib/bin');
     return keys.length > 0 ? keys : [];
 }
 
