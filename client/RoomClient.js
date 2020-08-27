@@ -31,14 +31,11 @@ function deviceInfo() {
     version : browser.getBrowserVersion()
   };
 }
-const logger = {
-  debug() {
-    // console.log(Array.from(arguments).join(','));
-  },
-  error() {
-    console.error(Array.from(arguments).join(','));
-  },
-};
+
+const apiHost = 'rtc.exokit.org:4443';
+function getProtooUrl({ roomId, peerId }) {
+	return `wss://${apiHost}/?roomId=${roomId}&peerId=${peerId}`;
+}
 
 const ICE_SERVERS = [
     {urls: 'stun:stun.stunprotocol.org:3478'},
@@ -103,9 +100,8 @@ export default class RoomClient extends EventTarget
 
 	constructor(
 		{
-			url,
-			// roomId,
-			// peerId,
+			roomId,
+			peerId,
 			displayName,
 			device = deviceInfo(),
 			handlerName,
@@ -124,7 +120,9 @@ export default class RoomClient extends EventTarget
 	{
         super();
 
-		logger.debug('constructor()', url, displayName, device.flag);
+		logger.debug(
+			'constructor() [roomId:"%s", peerId:"%s", displayName:"%s", device:%s]',
+			roomId, peerId, displayName, device.flag);
 
 		// Closed flag.
 		// @type {Boolean}
@@ -201,7 +199,7 @@ export default class RoomClient extends EventTarget
 
 		// Protoo URL.
 		// @type {String}
-		this._protooUrl = url;
+		this._protooUrl = getProtooUrl({ roomId, peerId });
 
 		// protoo-client Peer instance.
 		// @type {protooClient.Peer}
@@ -292,655 +290,611 @@ export default class RoomClient extends EventTarget
 			stateActions.setRoomState('closed'));
 	}
 
-	join() {
-		return new Promise((accept, reject) => {
-			const protooTransport = new protooClient.WebSocketTransport(this._protooUrl);
+	async join()
+	{
+		const protooTransport = new protooClient.WebSocketTransport(this._protooUrl);
 
-			this._protoo = new protooClient.Peer(protooTransport);
+		this._protoo = new protooClient.Peer(protooTransport);
 
-			/* store.dispatch(
-				stateActions.setRoomState('connecting')); */
+		/* store.dispatch(
+			stateActions.setRoomState('connecting')); */
 
-			this._protoo.on('open', () => {
-				this._joinRoom()
-				  .then(accept, reject);
+		this._protoo.on('open', () => this._joinRoom());
+
+		this._protoo.on('failed', () =>
+		{
+			console.log({
+				type : 'error',
+				text : 'WebSocket connection failed'
 			});
-
-			this._protoo.on('failed', () =>
-			{
-				console.warn({
+			/* store.dispatch(requestActions.notify(
+				{
 					type : 'error',
 					text : 'WebSocket connection failed'
-				});
-				reject(new Error('protoo connection failed'));
-				/* store.dispatch(requestActions.notify(
-					{
-						type : 'error',
-						text : 'WebSocket connection failed'
-					})); */
-			});
+				})); */
+		});
 
-			this._protoo.on('disconnected', () =>
-			{
-				console.log({
+		this._protoo.on('disconnected', () =>
+		{
+			console.log({
+				type : 'error',
+				text : 'WebSocket disconnected'
+			});
+			/* store.dispatch(requestActions.notify(
+				{
 					type : 'error',
 					text : 'WebSocket disconnected'
-				});
-				/* store.dispatch(requestActions.notify(
-					{
-						type : 'error',
-						text : 'WebSocket disconnected'
-					})); */
+				})); */
 
-				// Close mediasoup Transports.
-				if (this._sendTransport)
-				{
-					this._sendTransport.close();
-					this._sendTransport = null;
-				}
-
-				if (this._recvTransport)
-				{
-					this._recvTransport.close();
-					this._recvTransport = null;
-				}
-
-				/* store.dispatch(
-					stateActions.setRoomState('closed')); */
-			});
-
-			this._protoo.on('close', () =>
+			// Close mediasoup Transports.
+			if (this._sendTransport)
 			{
-				if (this._closed)
-					return;
+				this._sendTransport.close();
+				this._sendTransport = null;
+			}
 
-				this.close();
-			});
-
-			// eslint-disable-next-line no-unused-vars
-			this._protoo.on('request', async (request, accept, reject) =>
+			if (this._recvTransport)
 			{
-				logger.debug(
-					'proto "request" event [method:%s, data:%o]',
-					request.method, request.data);
+				this._recvTransport.close();
+				this._recvTransport = null;
+			}
 
-				switch (request.method)
+			store.dispatch(
+				stateActions.setRoomState('closed'));
+		});
+
+		this._protoo.on('close', () =>
+		{
+			if (this._closed)
+				return;
+
+			this.close();
+		});
+
+		// eslint-disable-next-line no-unused-vars
+		this._protoo.on('request', async (request, accept, reject) =>
+		{
+			logger.debug(
+				'proto "request" event [method:%s, data:%o]',
+				request.method, request.data);
+
+			switch (request.method)
+			{
+				case 'newConsumer':
 				{
-					case 'newConsumer':
+					if (!this._consume)
 					{
-						if (!this._consume)
-						{
-							reject(403, 'I do not want to consume');
+						reject(403, 'I do not want to consume');
 
-							break;
-						}
+						break;
+					}
 
-						const {
-							peerId,
-							producerId,
-							id,
-							kind,
-							rtpParameters,
-							type,
-							appData,
-							producerPaused
-						} = request.data;
+					const {
+						peerId,
+						producerId,
+						id,
+						kind,
+						rtpParameters,
+						type,
+						appData,
+						producerPaused
+					} = request.data;
 
-						try
-						{
-							const consumer = await this._recvTransport.consume(
-								{
-									id,
-									producerId,
-									kind,
-									rtpParameters,
-									appData : { ...appData, peerId } // Trick.
-								});
-
-							// Store in the map.
-							this._consumers.set(consumer.id, consumer);
-
-							consumer.on('transportclose', () =>
+					try
+					{
+						const consumer = await this._recvTransport.consume(
 							{
-								this._consumers.delete(consumer.id);
-
-								this.dispatchEvent(new MessageEvent('removereceivestream', {
-									data: {
-										peerId,
-									    consumer,
-									    appData,
-									},
-								}));
+								id,
+								producerId,
+								kind,
+								rtpParameters,
+								appData : { ...appData, peerId } // Trick.
 							});
 
-							const { spatialLayers, temporalLayers } =
-								mediasoupClient.parseScalabilityMode(
-									consumer.rtpParameters.encodings[0].scalabilityMode);
+						// Store in the map.
+						this._consumers.set(consumer.id, consumer);
 
-							/* store.dispatch(stateActions.addConsumer(
-								{
-									id                     : consumer.id,
-									type                   : type,
-									locallyPaused          : false,
-									remotelyPaused         : producerPaused,
-									rtpParameters          : consumer.rtpParameters,
-									spatialLayers          : spatialLayers,
-									temporalLayers         : temporalLayers,
-									preferredSpatialLayer  : spatialLayers - 1,
-									preferredTemporalLayer : temporalLayers - 1,
-									priority               : 1,
-									codec                  : consumer.rtpParameters.codecs[0].mimeType.split('/')[1],
-									track                  : consumer.track
-								},
-								peerId)); */
+						consumer.on('transportclose', () =>
+						{
+							this._consumers.delete(consumer.id);
 
-							// We are ready. Answer the protoo request so the server will
-							// resume this Consumer (which was paused for now if video).
-							accept();
-
-							// If audio-only mode is enabled, pause it.
-							/* if (consumer.kind === 'video' && store.getState().me.audioOnly)
-								this._pauseConsumer(consumer); */
-						    this.dispatchEvent(new MessageEvent('addreceivestream', {
+							this.dispatchEvent(new MessageEvent('removereceivestream', {
 								data: {
 									peerId,
 								    consumer,
-								    appData,
 								},
 							}));
-						}
-						catch (error)
-						{
-							logger.error('"newConsumer" request failed:%o', error);
+						});
 
-							store.dispatch(requestActions.notify(
-								{
-									type : 'error',
-									text : `Error creating a Consumer: ${error}`
-								}));
+						const { spatialLayers, temporalLayers } =
+							mediasoupClient.parseScalabilityMode(
+								consumer.rtpParameters.encodings[0].scalabilityMode);
 
-							throw error;
-						}
+						/* store.dispatch(stateActions.addConsumer(
+							{
+								id                     : consumer.id,
+								type                   : type,
+								locallyPaused          : false,
+								remotelyPaused         : producerPaused,
+								rtpParameters          : consumer.rtpParameters,
+								spatialLayers          : spatialLayers,
+								temporalLayers         : temporalLayers,
+								preferredSpatialLayer  : spatialLayers - 1,
+								preferredTemporalLayer : temporalLayers - 1,
+								priority               : 1,
+								codec                  : consumer.rtpParameters.codecs[0].mimeType.split('/')[1],
+								track                  : consumer.track
+							},
+							peerId)); */
 
-						break;
+						// We are ready. Answer the protoo request so the server will
+						// resume this Consumer (which was paused for now if video).
+						accept();
+
+						// If audio-only mode is enabled, pause it.
+						/* if (consumer.kind === 'video' && store.getState().me.audioOnly)
+							this._pauseConsumer(consumer); */
+					    this.dispatchEvent(new MessageEvent('addreceivestream', {
+							data: {
+								peerId,
+							    consumer,
+							},
+						}));
 					}
-
-					case 'newDataConsumer':
+					catch (error)
 					{
-						if (!this._consume)
-						{
-							reject(403, 'I do not want to data consume');
+						logger.error('"newConsumer" request failed:%o', error);
 
-							break;
-						}
-
-						if (!this._useDataChannel)
-						{
-							reject(403, 'I do not want DataChannels');
-
-							break;
-						}
-
-						const {
-							peerId, // NOTE: Null if bot.
-							dataProducerId,
-							id,
-							sctpStreamParameters,
-							label,
-							protocol,
-							appData
-						} = request.data;
-
-						try
-						{
-							const dataConsumer = await this._recvTransport.consumeData(
-								{
-									id,
-									dataProducerId,
-									sctpStreamParameters,
-									label,
-									protocol,
-									// appData : { ...appData, peerId } // Trick.
-								});
-
-							// Store in the map.
-							this._dataConsumers.set(dataConsumer.id, dataConsumer);
-
-							dataConsumer.on('transportclose', () =>
+						store.dispatch(requestActions.notify(
 							{
-								this._dataConsumers.delete(dataConsumer.id);
-							});
+								type : 'error',
+								text : `Error creating a Consumer: ${error}`
+							}));
 
-							dataConsumer.on('open', () =>
-							{
-								logger.debug('DataConsumer "open" event');
-
-								this.dispatchEvent(new MessageEvent('addreceive', {
-									data: {
-										peerId,
-										label,
-									    dataConsumer,
-									    appData,
-									},
-								}));
-							});
-
-							dataConsumer.on('close', () =>
-							{
-								logger.warn('DataConsumer "close" event');
-
-								this._dataConsumers.delete(dataConsumer.id);
-
-								this.dispatchEvent(new MessageEvent('removereceive', {
-									data: {
-										peerId,
-										label,
-									    dataConsumer,
-									    appData,
-									},
-								}));
-
-								/* store.dispatch(requestActions.notify(
-									{
-										type : 'error',
-										text : 'DataConsumer closed'
-									})); */
-							});
-
-							dataConsumer.on('error', (error) =>
-							{
-								logger.error('DataConsumer "error" event:%o', error);
-
-								store.dispatch(requestActions.notify(
-									{
-										type : 'error',
-										text : `DataConsumer error: ${error}`
-									}));
-							});
-
-							dataConsumer.on('message', (message) =>
-							{
-								logger.debug(
-									'DataConsumer "message" event [streamId:%d]',
-									dataConsumer.sctpStreamParameters.streamId);
-
-								/* // TODO: For debugging.
-								window.DC_MESSAGE = message;
-
-								if (message instanceof ArrayBuffer)
-								{
-									const view = new DataView(message);
-									const number = view.getUint32();
-
-									if (number == Math.pow(2, 32) - 1)
-									{
-										logger.warn('dataChannelTest finished!');
-
-										this._nextDataChannelTestNumber = 0;
-
-										return;
-									}
-
-									if (number > this._nextDataChannelTestNumber)
-									{
-										logger.warn(
-											'dataChannelTest: %s packets missing',
-											number - this._nextDataChannelTestNumber);
-									}
-
-									this._nextDataChannelTestNumber = number + 1;
-
-									return;
-								}
-								else if (typeof message !== 'string')
-								{
-									logger.warn('ignoring DataConsumer "message" (not a string)');
-
-									return;
-								}
-
-								switch (dataConsumer.label)
-								{
-									case 'chat':
-									{
-										const { peers } = store.getState();
-										const peersArray = Object.keys(peers)
-											.map((_peerId) => peers[_peerId]);
-										const sendingPeer = peersArray
-											.find((peer) => peer.dataConsumers.includes(dataConsumer.id));
-
-										if (!sendingPeer)
-										{
-											logger.warn('DataConsumer "message" from unknown peer');
-
-											break;
-										}
-
-										store.dispatch(requestActions.notify(
-											{
-												title   : `${sendingPeer.displayName} says:`,
-												text    : message,
-												timeout : 5000
-											}));
-
-										break;
-									}
-
-									case 'bot':
-									{
-										store.dispatch(requestActions.notify(
-											{
-												title   : 'Message from Bot:',
-												text    : message,
-												timeout : 5000
-											}));
-
-										break;
-									}
-								} */
-							});
-
-							// TODO: REMOVE
-							window.DC = dataConsumer;
-
-							/* store.dispatch(stateActions.addDataConsumer(
-								{
-									id                   : dataConsumer.id,
-									sctpStreamParameters : dataConsumer.sctpStreamParameters,
-									label                : dataConsumer.label,
-									protocol             : dataConsumer.protocol
-								},
-								peerId)); */
-
-							// We are ready. Answer the protoo request.
-							accept();
-						}
-						catch (error)
-						{
-							logger.error('"newDataConsumer" request failed:%o', error);
-
-							store.dispatch(requestActions.notify(
-								{
-									type : 'error',
-									text : `Error creating a DataConsumer: ${error}`
-								}));
-
-							throw error;
-						}
-
-						break;
+						throw error;
 					}
+
+					break;
 				}
-			});
 
-			this._protoo.on('notification', (notification) =>
-			{
-				logger.debug(
-					'proto "notification" event [method:%s, data:%o]',
-					notification.method, notification.data);
-
-				switch (notification.method)
+				case 'newDataConsumer':
 				{
-					case 'producerScore':
+					if (!this._consume)
 					{
-						const { producerId, score } = notification.data;
-
-						store.dispatch(
-							stateActions.setProducerScore(producerId, score));
+						reject(403, 'I do not want to data consume');
 
 						break;
 					}
 
-					case 'newPeer':
+					if (!this._useDataChannel)
 					{
-						const peer = notification.data;
+						reject(403, 'I do not want DataChannels');
 
-						store.dispatch(
-							stateActions.addPeer(
-								{ ...peer, consumers: [], dataConsumers: [] }));
+						break;
+					}
+
+					const {
+						peerId, // NOTE: Null if bot.
+						dataProducerId,
+						id,
+						sctpStreamParameters,
+						label,
+						protocol,
+						appData
+					} = request.data;
+
+					try
+					{
+						const dataConsumer = await this._recvTransport.consumeData(
+							{
+								id,
+								dataProducerId,
+								sctpStreamParameters,
+								label,
+								protocol,
+								appData : { ...appData, peerId } // Trick.
+							});
+
+						// Store in the map.
+						this._dataConsumers.set(dataConsumer.id, dataConsumer);
+
+						dataConsumer.on('transportclose', () =>
+						{
+							this._dataConsumers.delete(dataConsumer.id);
+						});
+
+						dataConsumer.on('open', () =>
+						{
+							logger.debug('DataConsumer "open" event');
+
+							this.dispatchEvent(new MessageEvent('addreceive', {
+								data: {
+									peerId,
+								    dataConsumer,
+								},
+							}));
+						});
+
+						dataConsumer.on('close', () =>
+						{
+							logger.warn('DataConsumer "close" event');
+
+							this._dataConsumers.delete(dataConsumer.id);
+
+							this.dispatchEvent(new MessageEvent('removereceive', {
+								data: {
+									peerId,
+								    dataConsumer,
+								},
+							}));
+
+							/* store.dispatch(requestActions.notify(
+								{
+									type : 'error',
+									text : 'DataConsumer closed'
+								})); */
+						});
+
+						dataConsumer.on('error', (error) =>
+						{
+							logger.error('DataConsumer "error" event:%o', error);
+
+							store.dispatch(requestActions.notify(
+								{
+									type : 'error',
+									text : `DataConsumer error: ${error}`
+								}));
+						});
+
+						dataConsumer.on('message', (message) =>
+						{
+							logger.debug(
+								'DataConsumer "message" event [streamId:%d]',
+								dataConsumer.sctpStreamParameters.streamId);
+
+							/* // TODO: For debugging.
+							window.DC_MESSAGE = message;
+
+							if (message instanceof ArrayBuffer)
+							{
+								const view = new DataView(message);
+								const number = view.getUint32();
+
+								if (number == Math.pow(2, 32) - 1)
+								{
+									logger.warn('dataChannelTest finished!');
+
+									this._nextDataChannelTestNumber = 0;
+
+									return;
+								}
+
+								if (number > this._nextDataChannelTestNumber)
+								{
+									logger.warn(
+										'dataChannelTest: %s packets missing',
+										number - this._nextDataChannelTestNumber);
+								}
+
+								this._nextDataChannelTestNumber = number + 1;
+
+								return;
+							}
+							else if (typeof message !== 'string')
+							{
+								logger.warn('ignoring DataConsumer "message" (not a string)');
+
+								return;
+							}
+
+							switch (dataConsumer.label)
+							{
+								case 'chat':
+								{
+									const { peers } = store.getState();
+									const peersArray = Object.keys(peers)
+										.map((_peerId) => peers[_peerId]);
+									const sendingPeer = peersArray
+										.find((peer) => peer.dataConsumers.includes(dataConsumer.id));
+
+									if (!sendingPeer)
+									{
+										logger.warn('DataConsumer "message" from unknown peer');
+
+										break;
+									}
+
+									store.dispatch(requestActions.notify(
+										{
+											title   : `${sendingPeer.displayName} says:`,
+											text    : message,
+											timeout : 5000
+										}));
+
+									break;
+								}
+
+								case 'bot':
+								{
+									store.dispatch(requestActions.notify(
+										{
+											title   : 'Message from Bot:',
+											text    : message,
+											timeout : 5000
+										}));
+
+									break;
+								}
+							} */
+						});
+
+						// TODO: REMOVE
+						window.DC = dataConsumer;
+
+						/* store.dispatch(stateActions.addDataConsumer(
+							{
+								id                   : dataConsumer.id,
+								sctpStreamParameters : dataConsumer.sctpStreamParameters,
+								label                : dataConsumer.label,
+								protocol             : dataConsumer.protocol
+							},
+							peerId)); */
+
+						// We are ready. Answer the protoo request.
+						accept();
+					}
+					catch (error)
+					{
+						logger.error('"newDataConsumer" request failed:%o', error);
 
 						store.dispatch(requestActions.notify(
 							{
-								text : `${peer.displayName} has joined the room`
+								type : 'error',
+								text : `Error creating a DataConsumer: ${error}`
 							}));
 
-						break;
+						throw error;
 					}
 
-					case 'peerClosed':
-					{
-						const { peerId } = notification.data;
-
-						store.dispatch(
-							stateActions.removePeer(peerId));
-
-						break;
-					}
-
-					case 'peerDisplayNameChanged':
-					{
-						const { peerId, displayName, oldDisplayName } = notification.data;
-
-						store.dispatch(
-							stateActions.setPeerDisplayName(displayName, peerId));
-
-						store.dispatch(requestActions.notify(
-							{
-								text : `${oldDisplayName} is now ${displayName}`
-							}));
-
-						break;
-					}
-
-					case 'downlinkBwe':
-					{
-						logger.debug('\'downlinkBwe\' event:%o', notification.data);
-
-						break;
-					}
-
-					case 'consumerClosed':
-					{
-						const { consumerId } = notification.data;
-						const consumer = this._consumers.get(consumerId);
-
-						if (!consumer)
-							break;
-
-						consumer.close();
-						this._consumers.delete(consumerId);
-
-						const { peerId } = consumer.appData;
-
-						store.dispatch(
-							stateActions.removeConsumer(consumerId, peerId));
-
-						break;
-					}
-
-					case 'consumerPaused':
-					{
-						const { consumerId } = notification.data;
-						const consumer = this._consumers.get(consumerId);
-
-						if (!consumer)
-							break;
-
-						consumer.pause();
-
-						store.dispatch(
-							stateActions.setConsumerPaused(consumerId, 'remote'));
-
-						break;
-					}
-
-					case 'consumerResumed':
-					{
-						const { consumerId } = notification.data;
-						const consumer = this._consumers.get(consumerId);
-
-						if (!consumer)
-							break;
-
-						consumer.resume();
-
-						store.dispatch(
-							stateActions.setConsumerResumed(consumerId, 'remote'));
-
-						break;
-					}
-
-					case 'consumerLayersChanged':
-					{
-						const { consumerId, spatialLayer, temporalLayer } = notification.data;
-						const consumer = this._consumers.get(consumerId);
-
-						if (!consumer)
-							break;
-
-						store.dispatch(stateActions.setConsumerCurrentLayers(
-							consumerId, spatialLayer, temporalLayer));
-
-						break;
-					}
-
-					case 'consumerScore':
-					{
-						const { consumerId, score } = notification.data;
-
-						store.dispatch(
-							stateActions.setConsumerScore(consumerId, score));
-
-						break;
-					}
-
-					case 'dataConsumerClosed':
-					{
-						const { dataConsumerId } = notification.data;
-						const dataConsumer = this._dataConsumers.get(dataConsumerId);
-
-						if (!dataConsumer)
-							break;
-
-						dataConsumer.close();
-						this._dataConsumers.delete(dataConsumerId);
-
-						const { peerId } = dataConsumer.appData;
-
-						store.dispatch(
-							stateActions.removeDataConsumer(dataConsumerId, peerId));
-
-						break;
-					}
-
-					case 'activeSpeaker':
-					{
-						const { peerId } = notification.data;
-
-						store.dispatch(
-							stateActions.setRoomActiveSpeaker(peerId));
-
-						break;
-					}
-
-					case 'initState': {
-						console.log('Room.js, initState:', notification);
-						break;
-					}
-					case 'updateState':
-					{
-						console.log('Room.js, updateState:', notification);
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					case 'setState':
-					{
-						console.log('Room.js, setState:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					case 'getFile':
-					{
-						console.log('Room.js, getFile:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					case 'edit':
-					{
-						console.log('Room.js, edit:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					case 'getAllKeys':
-					{
-						console.log('Room.js, getAllKeys:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					case 'runCode':
-					{
-						console.log('Room.js, runCode:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					case 'uploadBinary':
-					{
-						console.log('Room.js, uploadBinary:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
-					default:
-					{
-						logger.error(
-							'unknown protoo notification.method "%s"', notification.method);
-					}
+					break;
 				}
-			});
-	    });
+			}
+		});
+
+		this._protoo.on('notification', (notification) =>
+		{
+			logger.debug(
+				'proto "notification" event [method:%s, data:%o]',
+				notification.method, notification.data);
+
+			switch (notification.method)
+			{
+				case 'producerScore':
+				{
+					const { producerId, score } = notification.data;
+
+					store.dispatch(
+						stateActions.setProducerScore(producerId, score));
+
+					break;
+				}
+
+				case 'newPeer':
+				{
+					const peer = notification.data;
+
+					store.dispatch(
+						stateActions.addPeer(
+							{ ...peer, consumers: [], dataConsumers: [] }));
+
+					store.dispatch(requestActions.notify(
+						{
+							text : `${peer.displayName} has joined the room`
+						}));
+
+					break;
+				}
+
+				case 'peerClosed':
+				{
+					const { peerId } = notification.data;
+
+					store.dispatch(
+						stateActions.removePeer(peerId));
+
+					break;
+				}
+
+				case 'peerDisplayNameChanged':
+				{
+					const { peerId, displayName, oldDisplayName } = notification.data;
+
+					store.dispatch(
+						stateActions.setPeerDisplayName(displayName, peerId));
+
+					store.dispatch(requestActions.notify(
+						{
+							text : `${oldDisplayName} is now ${displayName}`
+						}));
+
+					break;
+				}
+
+				case 'downlinkBwe':
+				{
+					logger.debug('\'downlinkBwe\' event:%o', notification.data);
+
+					break;
+				}
+
+				case 'consumerClosed':
+				{
+					const { consumerId } = notification.data;
+					const consumer = this._consumers.get(consumerId);
+
+					if (!consumer)
+						break;
+
+					consumer.close();
+					this._consumers.delete(consumerId);
+
+					const { peerId } = consumer.appData;
+
+					store.dispatch(
+						stateActions.removeConsumer(consumerId, peerId));
+
+					break;
+				}
+
+				case 'consumerPaused':
+				{
+					const { consumerId } = notification.data;
+					const consumer = this._consumers.get(consumerId);
+
+					if (!consumer)
+						break;
+
+					consumer.pause();
+
+					store.dispatch(
+						stateActions.setConsumerPaused(consumerId, 'remote'));
+
+					break;
+				}
+
+				case 'consumerResumed':
+				{
+					const { consumerId } = notification.data;
+					const consumer = this._consumers.get(consumerId);
+
+					if (!consumer)
+						break;
+
+					consumer.resume();
+
+					store.dispatch(
+						stateActions.setConsumerResumed(consumerId, 'remote'));
+
+					break;
+				}
+
+				case 'consumerLayersChanged':
+				{
+					const { consumerId, spatialLayer, temporalLayer } = notification.data;
+					const consumer = this._consumers.get(consumerId);
+
+					if (!consumer)
+						break;
+
+					store.dispatch(stateActions.setConsumerCurrentLayers(
+						consumerId, spatialLayer, temporalLayer));
+
+					break;
+				}
+
+				case 'consumerScore':
+				{
+					const { consumerId, score } = notification.data;
+
+					store.dispatch(
+						stateActions.setConsumerScore(consumerId, score));
+
+					break;
+				}
+
+				case 'dataConsumerClosed':
+				{
+					const { dataConsumerId } = notification.data;
+					const dataConsumer = this._dataConsumers.get(dataConsumerId);
+
+					if (!dataConsumer)
+						break;
+
+					dataConsumer.close();
+					this._dataConsumers.delete(dataConsumerId);
+
+					const { peerId } = dataConsumer.appData;
+
+					store.dispatch(
+						stateActions.removeDataConsumer(dataConsumerId, peerId));
+
+					break;
+				}
+
+				case 'activeSpeaker':
+				{
+					const { peerId } = notification.data;
+
+					store.dispatch(
+						stateActions.setRoomActiveSpeaker(peerId));
+
+					break;
+				}
+
+				case 'setState':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'getFile':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'getAllKeys':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'edit':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'runCode':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				case 'uploadBinary':
+				{
+					console.log(notification.data)
+					break;
+				}
+
+				default:
+				{
+					logger.error(
+						'unknown protoo notification.method "%s"', notification.method);
+				}
+			}
+		});
 	}
 
-	async enableMic(mediaStream)
+	async enableMic()
 	{
 		logger.debug('enableMic()');
 
 		if (this._micProducer)
 			return;
 
-		/* if (!this._mediasoupDevice.canProduce('audio'))
+		if (!this._mediasoupDevice.canProduce('audio'))
 		{
 			logger.error('enableMic() | cannot produce audio');
 
 			return;
-		} */
+		}
 
 		let track;
 
 		try
 		{
-			track = mediaStream.getAudioTracks()[0];
-
-			/* if (!this._externalVideo)
+			if (!this._externalVideo)
 			{
 				logger.debug('enableMic() | calling getUserMedia()');
 
@@ -953,7 +907,7 @@ export default class RoomClient extends EventTarget
 				const stream = await this._getExternalVideoStream();
 
 				track = stream.getAudioTracks()[0].clone();
-			} */
+			}
 
 			this._micProducer = await this._sendTransport.produce(
 				{
@@ -984,11 +938,11 @@ export default class RoomClient extends EventTarget
 
 			this._micProducer.on('trackended', () =>
 			{
-				/* store.dispatch(requestActions.notify(
+				store.dispatch(requestActions.notify(
 					{
 						type : 'error',
 						text : 'Microphone disconnected!'
-					})); */
+					}));
 
 				this.disableMic()
 					.catch(() => {});
@@ -998,11 +952,11 @@ export default class RoomClient extends EventTarget
 		{
 			logger.error('enableMic() | failed:%o', error);
 
-			/* store.dispatch(requestActions.notify(
+			store.dispatch(requestActions.notify(
 				{
 					type : 'error',
 					text : `Error enabling microphone: ${error}`
-				})); */
+				}));
 
 			if (track)
 				track.stop();
@@ -1018,8 +972,8 @@ export default class RoomClient extends EventTarget
 
 		this._micProducer.close();
 
-		/* store.dispatch(
-			stateActions.removeProducer(this._micProducer.id)); */
+		store.dispatch(
+			stateActions.removeProducer(this._micProducer.id));
 
 		try
 		{
@@ -1028,11 +982,11 @@ export default class RoomClient extends EventTarget
 		}
 		catch (error)
 		{
-			/* store.dispatch(requestActions.notify(
+			store.dispatch(requestActions.notify(
 				{
 					type : 'error',
 					text : `Error closing server-side mic Producer: ${error}`
-				})); */
+				}));
 		}
 
 		this._micProducer = null;
@@ -1666,55 +1620,6 @@ export default class RoomClient extends EventTarget
 			stateActions.setAudioMutedState(false));
 	}
 
-    setState(key, value) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('setState', {
-        	key,
-        	value,
-        });
-	}
-	
-	getFile(key) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('getFile', {
-			key
-        });
-	}
-	
-	edit(keys) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('edit', {
-			keys
-        });
-	}
-	
-	getAllKeys() {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('getAllKeys');
-	}
-	
-	runCode(obj) {
-	    if (this._closed)
-	        return;
-
-		this._protoo.notify('runCode', obj);
-	}
-
-	uploadBinary(obj) {
-	    if (this._closed)
-	        return;
-
-		this._protoo.notify('uploadBinary', obj);
-	}
-
 	async restartIce()
 	{
 		logger.debug('restartIce()');
@@ -1860,7 +1765,7 @@ export default class RoomClient extends EventTarget
 		}
 	}
 
-	async enableChatDataProducer(appData = {})
+	async enableChatDataProducer()
 	{
 		logger.debug('enableChatDataProducer()');
 
@@ -1903,11 +1808,10 @@ export default class RoomClient extends EventTarget
 			this._chatDataProducer = await this._sendTransport.produceData(
 				{
 					ordered        : true, // false,
-					// maxRetransmits : 1,
+					maxRetransmits : 1,
 					label          : 'chat',
 					priority       : 'medium',
-					appData,
-					// appData        : { info: 'my-chat-DataProducer' }
+					appData        : { info: 'my-chat-DataProducer' }
 				});
 
 			/* store.dispatch(stateActions.addDataProducer(
@@ -2000,8 +1904,8 @@ export default class RoomClient extends EventTarget
 			// Create chat DataProducer.
 			this._botDataProducer = await this._sendTransport.produceData(
 				{
-					ordered           : true, // false,
-					// maxPacketLifeTime : 2000,
+					ordered           : false,
+					maxPacketLifeTime : 2000,
 					label             : 'bot',
 					priority          : 'medium',
 					appData           : { info: 'my-bot-DataProducer' }
@@ -2143,19 +2047,19 @@ export default class RoomClient extends EventTarget
 
 			this._displayName = displayName;
 
-			/* store.dispatch(
+			store.dispatch(
 				stateActions.setDisplayName(displayName));
 
 			store.dispatch(requestActions.notify(
 				{
 					text : 'Display name changed'
-				})); */
+				}));
 		}
 		catch (error)
 		{
 			logger.error('changeDisplayName() | failed: %o', error);
 
-			/* store.dispatch(requestActions.notify(
+			store.dispatch(requestActions.notify(
 				{
 					type : 'error',
 					text : `Could not change display name: ${error}`
@@ -2164,7 +2068,7 @@ export default class RoomClient extends EventTarget
 			// We need to refresh the component for it to render the previous
 			// displayName again.
 			store.dispatch(
-				stateActions.setDisplayName()); */
+				stateActions.setDisplayName());
 		}
 	}
 
@@ -2379,7 +2283,7 @@ export default class RoomClient extends EventTarget
 
 			await this._mediasoupDevice.load({ routerRtpCapabilities });
 
-			/* // NOTE: Stuff to play remote audios due to browsers' new autoplay policy.
+			// NOTE: Stuff to play remote audios due to browsers' new autoplay policy.
 			//
 			// Just get access to the mic and DO NOT close the mic track for a while.
 			// Super hack!
@@ -2390,7 +2294,7 @@ export default class RoomClient extends EventTarget
 				audioTrack.enabled = false;
 
 				setTimeout(() => audioTrack.stop(), 120000);
-			} */
+			}
 
 			// Create mediasoup Transport for sending (unless we don't want to produce).
 			if (this._produce)
@@ -2759,5 +2663,4 @@ export default class RoomClient extends EventTarget
 
 		return this._externalVideoStream;
 	}
-
 }
