@@ -7,7 +7,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint -c .eslintrc.js index.js",
-    "start": "MEDIASOUP_LISTEN_IP=192.168.1.68 MEDIASOUP_ANNOUNCED_IP=192.168.1.68 DEBUG=\\${DEBUG:='*mediasoup* *INFO* *WARN* *ERROR*'} INTERACTIVE=\\${INTERACTIVE:='true'} node index.js"
+    "start": "MEDIASOUP_LISTEN_IP=192.168.1.68 MEDIASOUP_ANNOUNCED_IP=192.168.1.68 DEBUG=\\${DEBUG:='*mediasoup* *INFO* *WARN* *ERROR*'} INTERACTIVE=\\${INTERACTIVE:='true'} node index.js",
+    "dev": "parcel build --target=browser client/protoo-client/lib/index.js --out-dir client/protoo-client/dist/ && MEDIASOUP_LISTEN_IP=192.168.1.68 MEDIASOUP_ANNOUNCED_IP=192.168.1.68 DEBUG=\\${DEBUG:='*mediasoup* *INFO* *WARN* *ERROR*'} INTERACTIVE=\\${INTERACTIVE:='true'} node index.js"
   },
   "dependencies": {
     "@sitespeed.io/throttle": "^0.5.4",
@@ -27,8 +28,9 @@
   },
   "devDependencies": {
     "eslint": "^6.8.0",
-    "prettier": "^1.16.4",
     "eslint-config-prettier": "^4.1.0",
-    "eslint-plugin-prettier": "^3.0.1"
+    "eslint-plugin-prettier": "^3.0.1",
+    "parcel": "^1.12.4",
+    "prettier": "^1.16.4"
   }
 }

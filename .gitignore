@@ -67,3 +67,5 @@ results
 certs
 bin
 *.heapsnapshot
+.cache
+.DS_STORE
