@@ -1,4 +1,4 @@
-edit(['hi.bin', 'lol.bin', 'haha.bin', 'meme.bin'], buffers => {
+edit(['hi.bin', 'lol.bin', 'haha.bin', 'meme.bin'], (buffers, args) => {
     let newBuffers = [];
     for (let i = 0; i < buffers.length; i++) {
         const buffer = buffers[i];
