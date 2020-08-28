@@ -65,7 +65,6 @@ results
 
 # webaverse custom ignores
 certs
-bin
 *.heapsnapshot
 .cache
 .DS_STORE
