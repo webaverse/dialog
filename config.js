@@ -17,7 +17,7 @@ const config =
 	// Signaling settings (protoo WebSocket server and HTTP API server).
 	https  :
 	{
-		listenIp   : '0.0.0.0',
+		listenIp   : '127.0.0.1',
 		// NOTE: Don't change listenPort (client app assumes 4443).
 		listenPort : process.env.PROTOO_LISTEN_PORT || 4443,
 		// NOTE: Set your own valid certificate files.
@@ -30,7 +30,7 @@ const config =
 	// TODO remove
 	adminHttp  :
 	{
-		listenIp   : '0.0.0.0',
+		listenIp   : '127.0.0.1',
 		// NOTE: Don't change listenPort (client app assumes 4443).
 		listenPort : process.env.ADMIN_LISTEN_PORT || 4444
 	},
@@ -127,10 +127,10 @@ const config =
 			listenIps :
 			[
 				{
-					ip : process.env.MEDIASOUP_LISTEN_IP
+					ip : process.env.MEDIASOUP_LISTEN_IP || '127.0.0.1'
 				},
 				{
-					ip          : '0.0.0.0',
+					ip          : '127.0.0.1',
 					announcedIp : process.env.MEDIASOUP_ANNOUNCED_IP
 				}
 			],
@@ -148,7 +148,7 @@ if (process.env.MEDIASOUP_ANNOUNCED_IP)
 {
 	// For now we have to bind to 0.0.0.0 to ensure TURN and non-TURN connectivity.
 	config.mediasoup.webRtcTransportOptions.listenIps.push({
-		ip          : '0.0.0.0',
+		ip          : '127.0.0.1',
 		announcedIp : process.env.MEDIASOUP_ANNOUNCED_IP
 	});
 }
