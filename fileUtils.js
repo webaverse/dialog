@@ -18,7 +18,7 @@ const getAllKeys = async () => {
 }
 
 const getFile = async (key) => {
-    const fileHandle = await fs.promises.open(`${process.cwd()}/chunkSrc/${key}`, 'r');
+    const fileHandle = await fs.promises.open(`${process.cwd()}/lib/bin/${key}`, 'r');
     if (fileHandle) {
         const buffer = await fs.promises.readFile(fileHandle);
         if (buffer) {

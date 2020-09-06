@@ -20,6 +20,7 @@ const url = require('url');
 const protoo = require('./lib/protoo-server/lib/index.js');
 const mediasoup = require('mediasoup');
 const express = require('express');
+const cors = require('cors')
 const bodyParser = require('body-parser');
 const { AwaitQueue } = require('awaitqueue');
 const Logger = require('./lib/Logger');
@@ -28,6 +29,7 @@ const interactiveServer = require('./lib/interactiveServer');
 const interactiveClient = require('./lib/interactiveClient');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
+const { getFile } = require('./fileUtils.js');
 
 const logger = new Logger();
 const queue = new AwaitQueue();
@@ -117,6 +119,8 @@ async function createExpressApp()
 	expressApp = express();
 	expressApp.use(express.static(__dirname));
 	expressApp.use(bodyParser.json());
+	expressApp.use(express.urlencoded({ extended: true }))
+	expressApp.use(cors())
 
 	expressApp.param(
 		'roomId', (req, res, next, roomId) =>
@@ -144,6 +148,18 @@ async function createExpressApp()
 			const data = req.room.getRouterRtpCapabilities();
 
 			res.status(200).json(data);
+		});
+
+	// GET binary of a file on server.
+	expressApp.get(
+		'/key/:key', async (req, res, next) =>
+		{
+			try {
+				const buffer = await getFile(req.params.key);
+				res.status(200).send(buffer);
+			} catch(e) {
+				next(e)
+			}
 		});
 
 	/**
