@@ -151,16 +151,17 @@ async function createExpressApp()
 		});
 
 	// GET binary of a file on server.
-	expressApp.get(
-		'/key/:key', async (req, res, next) =>
-		{
-			try {
-				const buffer = await getFile(req.params.key);
-				res.status(200).send(buffer);
-			} catch(e) {
-				next(e)
-			}
-		});
+	expressApp.get('/key/:key', async (req, res, next) => {
+		try {
+			Room.lockFiles(keys)
+			const buffer = await getFile(req.params.key);
+			Room.unlockFiles(keys)
+			res.status(200).send(buffer);
+		} catch(e) {
+			Room.unlockFiles(keys)
+			next(e)
+		}
+	});
 
 	/**
 	 * POST API to create a Broadcaster.
