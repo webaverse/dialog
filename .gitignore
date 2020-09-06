@@ -64,7 +64,6 @@ typings/
 results
 
 # webaverse custom ignores
-certs
 *.heapsnapshot
 .cache
 .DS_STORE
