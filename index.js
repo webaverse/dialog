@@ -428,7 +428,7 @@ async function runHttpsServer()
 		key  : fs.readFileSync(config.https.tls.key)
 	};
 
-	httpsServer = http.createServer(expressApp);
+	httpsServer = https.createServer(tls, expressApp);
 
 	await new Promise((resolve) =>
 	{
