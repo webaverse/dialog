@@ -67,3 +67,4 @@ results
 *.heapsnapshot
 .cache
 .DS_STORE
+certs/
