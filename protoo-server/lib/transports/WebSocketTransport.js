@@ -109,10 +109,8 @@ class WebSocketTransport extends EnhancedEventEmitter
 			{
 				const binaryMessage = {
 					notification: true,
-					method: 'uploadBinary',
-					data: {
-						binary: raw
-					}
+					method: 'binary',
+					data: raw.binaryData,
 				}
 				// logger.warn('ignoring received binary message [conn:%s]', this);
 				this.safeEmit('message', binaryMessage);
