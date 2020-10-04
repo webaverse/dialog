@@ -26,7 +26,8 @@
     "pidusage": "^2.0.18",
     "protoo-client": "^4.0.4",
     "protoo-server": "^4.0.4",
-    "sctp": "^0.0.19"
+    "sctp": "^0.0.19",
+    "yjs": "^13.4.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
