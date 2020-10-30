@@ -436,7 +436,7 @@ async function runHttpsServer()
 			Number(config.https.listenPort), config.https.listenIp, resolve);
 	});
 
-	// TODO remove, alt server needed to spoof janus API.
+	/* // TODO remove, alt server needed to spoof janus API.
 	logger.info('running an Admin HTTP server...');
 
 	adminHttpServer = http.createServer(expressAdminApp);
@@ -445,7 +445,7 @@ async function runHttpsServer()
 	{
 		adminHttpServer.listen(
 			Number(config.adminHttp.listenPort), config.adminHttp.listenIp, resolve);
-	});
+	}); */
 }
 
 
