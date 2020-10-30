@@ -3,7 +3,7 @@
 // Based upon mediasoup-demo server
 // https://github.com/versatica/mediasoup-demo/tree/v3/server
 
-process.title = 'dialog';
+// process.title = 'dialog';
 process.env.DEBUG = process.env.DEBUG || '*INFO* *WARN* *ERROR*';
 
 const config = require('./config');
