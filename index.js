@@ -456,26 +456,18 @@ async function runProtooWebSocketServer()
 {
 	logger.info('running protoo WebSocketServer...');
 
-  const initState = await new Promise((accept, reject) => {
-    const bs = [];
-    const data = b => {
-      bs.push(b);
-    };
-    process.stdin.on('data', data);
-    const end = () => {
-      let b = Buffer.concat(bs);
-      b = b.byteLength > 0 ? b : null;
-      accept(b);
-      process.stdin.removeListener('data', data);
-      process.stdin.removeListener('end', end);
-      process.stdin.removeListener('error', error);
-    };
-    process.stdin.on('end', end);
-    const error = reject;
-    process.stdin.once('error', error);
-  });
+	const room = await getOrCreateRoom({ roomId: 'room' });
 
-	const room = await getOrCreateRoom({ roomId: 'room', initState });
+	let live = true;
+	process.on('SIGTERM', async () => {
+	  if (live) {
+	  	live = false;
+
+	    await room.close();
+
+	    process.exit();
+	  }
+	});
 
 	// Create the protoo WebSocket server.
 	protooWebSocketServer = new protoo.WebSocketServer(httpsServer,
@@ -536,7 +528,7 @@ function getMediasoupWorker()
 	return worker;
 }
 
-async function getOrCreateRoom({ roomId, initState })
+async function getOrCreateRoom({ roomId })
 {
 	let room = rooms.get(roomId);
 
@@ -547,7 +539,7 @@ async function getOrCreateRoom({ roomId, initState })
 
 		const mediasoupWorker = getMediasoupWorker();
 
-		room = await Room.create({ mediasoupWorker, roomId, authKey, initState });
+		room = await Room.create({ mediasoupWorker, roomId, authKey });
 
 		rooms.set(roomId, room);
 		room.on('close', () => rooms.delete(roomId));
