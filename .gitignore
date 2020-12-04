@@ -68,3 +68,4 @@ results
 .cache
 .DS_STORE
 certs/
+data/*.bin
