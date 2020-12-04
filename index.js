@@ -463,7 +463,8 @@ async function runProtooWebSocketServer()
     };
     process.stdin.on('data', data);
     const end = () => {
-      const b = Buffer.concat(bs);
+      let b = Buffer.concat(bs);
+      b = b.byteLength > 0 ? b : null;
       accept(b);
       process.stdin.removeListener('data', data);
       process.stdin.removeListener('end', end);
