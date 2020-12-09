@@ -446,6 +446,8 @@ async function runHttpsServer()
 		adminHttpServer.listen(
 			Number(config.adminHttp.listenPort), config.adminHttp.listenIp, resolve);
 	}); */
+
+	console.log('ready');
 }
 
 
