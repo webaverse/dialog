@@ -66,7 +66,6 @@ async function run()
 	}
 	await runProtooWebSocketServer();
 
-
 	// Log rooms status every X seconds.
 	setInterval(() =>
 	{
@@ -75,6 +74,8 @@ async function run()
 			room.logStatus();
 		}
 	}, 120000);
+
+	console.log('ready');
 }
 
 async function runMediasoupWorkers()
@@ -446,8 +447,6 @@ async function runHttpsServer()
 		adminHttpServer.listen(
 			Number(config.adminHttp.listenPort), config.adminHttp.listenIp, resolve);
 	}); */
-
-	console.log('ready');
 }
 
 
