@@ -80,7 +80,7 @@ class Message
 			}
 		}
 		// Notification.
-		else if (object.notification)
+		else if (object.notification || (object.method && object.data))
 		{
 			message.notification = true;
 
