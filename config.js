@@ -12,8 +12,6 @@ const os = require('os');
 const internalIp = require('internal-ip');
 const internalIpV4 = internalIp.v4.sync();
 
-const certsDirectory = `${__dirname}/../multiplayer-backend/certs`;
-
 const config =
 {
 	// Listening hostname (just for `gulp live` task).
@@ -27,8 +25,8 @@ const config =
 		// NOTE: Set your own valid certificate files.
 		tls        :
 		{
-			cert : process.env.HTTPS_CERT_FULLCHAIN || `${certsDirectory}/fullchain.pem`,
-			key  : process.env.HTTPS_CERT_PRIVKEY || `${certsDirectory}/privkey.pem`
+			cert : process.env.HTTPS_CERT_FULLCHAIN || `${__dirname}/certs/fullchain.pem`,
+			key  : process.env.HTTPS_CERT_PRIVKEY || `${__dirname}/certs/privkey.pem`
 		}
 	},
 	// TODO remove
@@ -145,7 +143,7 @@ const config =
 			maxIncomingBitrate              : 1500000
 		}
 	},
-	authKey: process.env.AUTH_KEY || `${certsDirectory}/perms.pub.pem`
+	authKey: process.env.AUTH_KEY || `${__dirname}/certs/perms.pub.pem`
 };
 
 /* if (process.env.MEDIASOUP_ANNOUNCED_IP) 
