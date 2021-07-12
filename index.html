@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+
+<head>
+</head>
+
+<body>
+<script type=module>
+import RoomClient from './client/RoomClient.js';
+
+function randomName() {
+  return Math.random().toString(36).substring(7);
+}
+
+(async () => {
+
+window.logger = console; // new Logger('RoomClient');
+// window.logger.debug = window.logger.info;
+
+const roomId = 'room1';
+const peerId = randomName();
+const displayName = randomName();
+// Get current device info.
+
+/* store.dispatch(
+	stateActions.setRoomUrl(roomUrl));
+
+store.dispatch(
+	stateActions.setRoomFaceDetection(faceDetection));
+
+store.dispatch(
+	stateActions.setMe({ peerId, displayName, displayNameSet, device })); */
+
+const roomClient = new RoomClient({
+	roomId,
+	peerId,
+	displayName,
+	/* handlerName : handler,
+	useSimulcast,
+	useSharingSimulcast,
+	forceTcp,
+	produce,
+	consume,
+	forceH264,
+	forceVP9,
+	svc,
+	datachannel,
+	externalVideo */
+});
+roomClient.addEventListener('addsend', async e => {
+  const {data: {dataProducer: {id, _dataChannel}}} = e;
+  console.log('add send', id, _dataChannel, _dataChannel.readyState);
+  if (_dataChannel.readyState !== 'open') {
+    await new Promise((accept, reject) => {
+      const _open = e => {
+        accept();
+
+        // _dataChannel.flushMessageQueue();
+        _dataChannel.removeEventListener('open', _open);
+      };
+      _dataChannel.addEventListener('open', _open);
+    });
+  }
+  /* _dataChannel.addEventListener('open', e => {
+    console.log('send open', e); */
+    // setInterval(() => {
+  console.log('sending...');
+      _dataChannel.send('lol');
+    // }, 1000);
+  // });
+});
+roomClient.addEventListener('removesend', e => {
+  const {data: {dataProducer: {id, _dataChannel}}} = e;
+  console.log('remove send', id, _dataChannel);
+});
+roomClient.addEventListener('addreceive', e => {
+  const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
+  console.log('add data consumer', peerId, _dataChannel);
+  _dataChannel.addEventListener('message', e => {
+    console.log('got data message', peerId, e);
+  });
+});
+roomClient.addEventListener('removereceive', e => {
+  const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
+  console.log('add data consumer', peerId, _dataChannel);
+});
+/* roomClient.addEventListener('message', e => {
+  console.log('message', e);
+}); */
+roomClient.addEventListener('addreceivestream', e => {
+  const {data: {peerId, consumer: {id, _track}}} = e;
+  console.log('add receive stream', peerId, _track);
+});
+roomClient.addEventListener('removereceivestream', e => {
+  const {data: {peerId, consumer: {id, _track}}} = e;
+  console.log('remove receive stream', peerId, _track);
+});
+
+roomClient.join();
+roomClient.addEventListener('join', async e => {
+  console.log('got join');
+  roomClient.enableChatDataProducer();
+  // await roomClient.enableMic();
+  // await roomClient.enableWebcam();
+});
+
+})();
+</script>
+</body>
+
+</html>

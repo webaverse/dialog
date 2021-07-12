@@ -62,3 +62,10 @@ typings/
 
 .serverless
 results
+
+# webaverse custom ignores
+*.heapsnapshot
+.cache
+.DS_STORE
+certs/
+data/*.bin

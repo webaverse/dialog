@@ -3,7 +3,7 @@
 // Based upon mediasoup-demo server
 // https://github.com/versatica/mediasoup-demo/tree/v3/server
 
-process.title = 'dialog';
+// process.title = 'dialog';
 process.env.DEBUG = process.env.DEBUG || '*INFO* *WARN* *ERROR*';
 
 const config = require('./config');
@@ -17,9 +17,10 @@ const fs = require('fs');
 const https = require('https');
 const http = require('http');
 const url = require('url');
-const protoo = require('protoo-server');
+const protoo = require('./protoo-server/lib/index.js');
 const mediasoup = require('mediasoup');
 const express = require('express');
+const cors = require('cors')
 const bodyParser = require('body-parser');
 const { AwaitQueue } = require('awaitqueue');
 const Logger = require('./lib/Logger');
@@ -28,6 +29,7 @@ const interactiveServer = require('./lib/interactiveServer');
 const interactiveClient = require('./lib/interactiveClient');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
+const { getFile } = require('./fileUtils.js');
 
 const logger = new Logger();
 const queue = new AwaitQueue();
@@ -64,7 +66,6 @@ async function run()
 	}
 	await runProtooWebSocketServer();
 
-
 	// Log rooms status every X seconds.
 	setInterval(() =>
 	{
@@ -73,6 +74,8 @@ async function run()
 			room.logStatus();
 		}
 	}, 120000);
+
+	console.log('ready');
 }
 
 async function runMediasoupWorkers()
@@ -115,7 +118,10 @@ async function createExpressApp()
 	logger.info('creating Express app...');
 
 	expressApp = express();
+	expressApp.use(express.static(__dirname));
 	expressApp.use(bodyParser.json());
+	expressApp.use(express.urlencoded({ extended: true }))
+	expressApp.use(cors())
 
 	expressApp.param(
 		'roomId', (req, res, next, roomId) =>
@@ -144,6 +150,19 @@ async function createExpressApp()
 
 			res.status(200).json(data);
 		});
+
+	// GET binary of a file on server.
+	expressApp.get('/key/:key', async (req, res, next) => {
+		try {
+			Room.lockFiles(keys)
+			const buffer = await getFile(req.params.key);
+			Room.unlockFiles(keys)
+			res.status(200).send(buffer);
+		} catch(e) {
+			Room.unlockFiles(keys)
+			next(e)
+		}
+	});
 
 	/**
 	 * POST API to create a Broadcaster.
@@ -418,7 +437,7 @@ async function runHttpsServer()
 			Number(config.https.listenPort), config.https.listenIp, resolve);
 	});
 
-	// TODO remove, alt server needed to spoof janus API.
+	/* // TODO remove, alt server needed to spoof janus API.
 	logger.info('running an Admin HTTP server...');
 
 	adminHttpServer = http.createServer(expressAdminApp);
@@ -427,7 +446,7 @@ async function runHttpsServer()
 	{
 		adminHttpServer.listen(
 			Number(config.adminHttp.listenPort), config.adminHttp.listenIp, resolve);
-	});
+	}); */
 }
 
 
@@ -437,6 +456,19 @@ async function runHttpsServer()
 async function runProtooWebSocketServer()
 {
 	logger.info('running protoo WebSocketServer...');
+
+	const room = await getOrCreateRoom({ roomId: 'room' });
+
+	let live = true;
+	process.on('SIGTERM', async () => {
+	  if (live) {
+	  	live = false;
+
+	    await room.close();
+
+	    process.exit();
+	  }
+	});
 
 	// Create the protoo WebSocket server.
 	protooWebSocketServer = new protoo.WebSocketServer(httpsServer,
@@ -471,7 +503,7 @@ async function runProtooWebSocketServer()
 		// roomId.
 		queue.push(async () =>
 		{
-			const room = await getOrCreateRoom({ roomId });
+			// const room = await getOrCreateRoom({ roomId });
 
 			// Accept the protoo WebSocket connection.
 			const protooWebSocketTransport = accept();

@@ -9,6 +9,8 @@
  */
 
 const os = require('os');
+const internalIp = require('internal-ip');
+const internalIpV4 = internalIp.v4.sync();
 
 const config =
 {
@@ -19,7 +21,7 @@ const config =
 	{
 		listenIp   : '0.0.0.0',
 		// NOTE: Don't change listenPort (client app assumes 4443).
-		listenPort : process.env.PROTOO_LISTEN_PORT || 4443,
+		listenPort : process.env.PROTOO_LISTEN_PORT || 443,
 		// NOTE: Set your own valid certificate files.
 		tls        :
 		{
@@ -32,13 +34,13 @@ const config =
 	{
 		listenIp   : '0.0.0.0',
 		// NOTE: Don't change listenPort (client app assumes 4443).
-		listenPort : process.env.ADMIN_LISTEN_PORT || 4443
+		listenPort : process.env.ADMIN_LISTEN_PORT || 4444
 	},
 	// mediasoup settings.
 	mediasoup :
 	{
 		// Number of mediasoup workers to launch.
-		numWorkers     : Object.keys(os.cpus()).length,
+		numWorkers     : parseInt(process.env.NUM_WORKERS, 10) || Object.keys(os.cpus()).length,
 		// mediasoup WorkerSettings.
 		// See https://mediasoup.org/documentation/v3/mediasoup/api/#WorkerSettings
 		workerSettings :
@@ -127,11 +129,11 @@ const config =
 			listenIps :
 			[
 				{
-					ip : process.env.MEDIASOUP_LISTEN_IP
+					ip : process.env.MEDIASOUP_LISTEN_IP || '0.0.0.0'
 				},
 				{
 					ip          : '0.0.0.0',
-					announcedIp : process.env.MEDIASOUP_ANNOUNCED_IP
+					announcedIp : process.env.MEDIASOUP_ANNOUNCED_IP || internalIpV4,
 				}
 			],
 			initialAvailableOutgoingBitrate : 1000000,
@@ -144,13 +146,15 @@ const config =
 	authKey: process.env.AUTH_KEY || `${__dirname}/certs/perms.pub.pem`
 };
 
-if (process.env.MEDIASOUP_ANNOUNCED_IP) 
+/* if (process.env.MEDIASOUP_ANNOUNCED_IP) 
 {
 	// For now we have to bind to 0.0.0.0 to ensure TURN and non-TURN connectivity.
 	config.mediasoup.webRtcTransportOptions.listenIps.push({
 		ip          : '0.0.0.0',
-		announcedIp : process.env.MEDIASOUP_ANNOUNCED_IP
+		announcedIp : process.env.MEDIASOUP_ANNOUNCED_IP,
 	});
-}
+} */
+
+// MEDIASOUP_LISTEN_IP=${PRIVATE_IP} MEDIASOUP_ANNOUNCED_IP=${PRIVATE_IP}
 
 module.exports = config;
